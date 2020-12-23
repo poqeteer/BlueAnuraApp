@@ -17,9 +17,10 @@ samples, guidance on mobile development, and a full API reference.
 
 ## Build
 
-Run 
+Assuming you have Flutter installed... Run 
 
-    flutter get
+    flutter pub get
+    flutter run
 
 Add to ./ios/Runner/Info.plist
 
