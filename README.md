@@ -17,10 +17,6 @@ samples, guidance on mobile development, and a full API reference.
 
 ## Build
 
-Run 
-
-    flutter get
-
 Add to ./ios/Runner/Info.plist
 
     <key>CFBundleName</key>
@@ -43,3 +39,8 @@ And this to ./android/app/src/main/AndroidManifest.xml
 For now cloned the gallery_saver to fix bug in ./lib/views/camera/widgets/gallery_saver/android/src/main/kotlin/carnegietechnologies/gallery_saver/FileUtils.kt lines 272 and 275, add .toString()
 
 Update the icon see comments in pubspec.yaml
+
+Assuming you have Flutter installed... Run 
+
+    flutter pub get
+    flutter run
