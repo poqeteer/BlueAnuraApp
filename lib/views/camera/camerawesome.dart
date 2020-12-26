@@ -2,18 +2,24 @@ import 'dart:async';
 import 'dart:io';
 import 'dart:typed_data';
 
+import 'package:blue_anura/utils/app_info.dart';
+import 'package:blue_anura/utils/get_location.dart';
+import 'package:blue_anura/utils/storage_utils.dart';
 import 'package:camerawesome/models/orientations.dart';
 import 'package:blue_anura/views/camera/widgets/bottom_bar.dart';
 import 'package:blue_anura/views/camera/widgets/preview_card.dart';
 import 'package:blue_anura/views/camera/widgets/top_bar.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:image/image.dart' as imgUtils;
-// import 'package:ext_storage/ext_storage.dart';
-import 'package:gallery_saver/gallery_saver.dart';
+// import 'package:image/image.dart' as imgUtils;
+// import 'package:gallery_saver/gallery_saver.dart';
 
 import 'package:path_provider/path_provider.dart';
 import 'package:camerawesome/camerawesome_plugin.dart';
+import 'package:flutter_exif_plugin/flutter_exif_plugin.dart';
+import 'package:location/location.dart';
+// import 'package:exif/exif.dart';
+import 'package:adaptive_dialog/adaptive_dialog.dart';
 
 class Camera extends StatefulWidget {
   // just for E2E test. if true we create our images names from datetime.
@@ -167,43 +173,102 @@ class _CameraState extends State<Camera> with TickerProviderStateMixin {
     final Directory extDir = await getTemporaryDirectory();
     final testDir =
       await Directory('${extDir.path}/test').create(recursive: true);
-    final String filePath = widget.randomPhotoName
-        ? '${testDir.path}/${DateTime.now().millisecondsSinceEpoch}.jpg'
-        : '${testDir.path}/photo_test.jpg';
+    final String fileName = widget.randomPhotoName
+        ? '${DateTime.now().millisecondsSinceEpoch}.jpg'
+        : 'photo_test.jpg';
+    final String filePath ='${testDir.path}/$fileName';
 
     // final String path = await ExtStorage.getExternalStoragePublicDirectory(ExtStorage.DIRECTORY_PICTURES);
     // final String filePath = '$path/photo_test.jpg';
+    Stopwatch stopwatch = new Stopwatch()..start();
     await _pictureController.takePicture(filePath);
+    print('takePicture: ${stopwatch.elapsed}');
     // lets just make our phone vibrate
     HapticFeedback.mediumImpact();
+
     _lastPhotoPath = filePath;
     setState(() {});
+    print('setState: ${stopwatch.elapsed}');
     if (_previewAnimationController.status == AnimationStatus.completed) {
       _previewAnimationController.reset();
     }
     _previewAnimationController.forward();
+    print('preview: ${stopwatch.elapsed}');
     print("----------------------------------");
     print("TAKE PHOTO CALLED");
-    final file = File(filePath);
-    print("==> hastakePhoto : ${file.exists()} | path : $filePath");
-    final img = imgUtils.decodeImage(file.readAsBytesSync());
-    print("==> img.width : ${img.width} | img.height : ${img.height}");
+    File _image = File(filePath);
+    print("==> hastakePhoto : ${_image.exists()} | path : $filePath");
+    // final img = imgUtils.decodeImage(file.readAsBytesSync());
+    // print("==> img.width : ${img.width} | img.height : ${img.height}");
     print("----------------------------------");
 
-    GallerySaver.saveImage(filePath, albumName: "BlueAnura")
-        .then((success) {
-          if (success) {
-            print("----------------------------------");
+    final exif = FlutterExif.fromPath(filePath);
+    String msg = '';
+    LocationData _location;
+    try {
+      _location = await BuildLocation.buildLocationText();
+    } catch(e) {
+      msg = e.toString();
+      await showOkAlertDialog(title: "Location Error", message: msg, context: context);
+    }
+    if (_location != null)
+      try {
+        await exif.setLatLong(_location.latitude, _location.longitude);
+        await exif.setAttribute("UserComment",
+            "BlueAnura v${AppInfo().version}.${AppInfo().buildNum} $msg");
+
+        // apply attributes
+        await exif.saveAttributes();
+        print("----------------------------------");
+        print('exif: ${stopwatch.elapsed}');
+        print("exif updated: $_location");
+        print("----------------------------------");
+
+        // var bytes = await _image.readAsBytes();
+        // var tags = await readExifFromBytes(bytes);
+        // var sb = StringBuffer();
+        //
+        // tags.forEach((k, v) {
+        //   if (k.contains("GPS")) sb.write("$k: $v \n");
+        // });
+        //
+        // print(sb.toString());
+
+        // await showOkAlertDialog(title: "EXIF", message: sb.toString(), context: context);
+      } catch (e) {
+        print("==================================");
+        print(e.toString());
+        await showOkAlertDialog(title: "EXIF Error", message: e.toString(), context: context);
+        print("==================================");
+      }
+
+    print(Platform.operatingSystemVersion);
+    // if (Platform.operatingSystemVersion.contains("11")) {
+    //   _image.copy('storage/emulated/0/Pictures/$fileName').then((value) {
+    //     print("----------------------------------");
+    //     print("IMAGE MOVED: Success");
+    //     print("==> from: $filePath to $value");
+    //     print("----------------------------------");
+    //     _image.delete();
+    //   }).catchError((error) {
+    //     showOkAlertDialog(
+    //         title: "Copy Error (SDK30)", message: error.toString(), context: context);
+    //   });
+    // } else
+    StorageUtils.createFolder("DCIM/BlueAnura").then((path) {
+      _image.copy('$path/$fileName').then((value) {
+        print("----------------------------------");
             print("IMAGE MOVED: Success");
-            print("==> from: $filePath to gallery album name: BlueAnura");
-            print("==> path: $success");
-            print("----------------------------------");
-            file.delete();
-          } else {
-            print("----------------------------------");
-            print("IMAGE MOVED: Failed");
-            print("----------------------------------");
-          }
+        print("==> from: $filePath to $value");
+        print("----------------------------------");
+        _image.delete();
+      }).catchError((error) {
+        showOkAlertDialog(title: "Copy Error", message: error.toString(), context: context);
+      });
+    }).catchError((error){
+      print("----------------------------------");
+      print("IMAGE MOVED: Failed ${error.toString()}");
+      print("----------------------------------");
     });
   }
 

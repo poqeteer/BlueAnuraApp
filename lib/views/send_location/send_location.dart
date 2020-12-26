@@ -277,9 +277,9 @@ class _SendLocationState extends State<SendLocation> {
                                     "\n\n" +
                                     url + "\n\n" +
                                     "Accuracy: " +
-                                    _locationData.accuracy.toString() + "m\n" +
+                                    _locationData.accuracy.toStringAsFixed(2) + "m\n" +
                                     "Altitude: " +
-                                    _locationData.altitude.toString() + "m";
+                                    _locationData.altitude.toStringAsFixed(2) + "m";
                                 await Share.share(message);
                                 // _onBasicAlertPressed(
                                 //     context, "Message", message);

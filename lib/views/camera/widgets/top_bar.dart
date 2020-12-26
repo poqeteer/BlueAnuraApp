@@ -1,7 +1,7 @@
 import 'package:camerawesome/models/capture_modes.dart';
 import 'package:camerawesome/models/flashmodes.dart';
 import 'package:camerawesome/models/orientations.dart';
-import 'package:blue_anura/views/camera/widgets/camera_buttons.dart';
+import 'package:blue_anura/views/widgets/option_button.dart';
 import 'package:flutter/material.dart';
 // import 'package:flutter/services.dart';
 
