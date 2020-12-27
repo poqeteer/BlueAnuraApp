@@ -1,5 +1,6 @@
 // import 'package:camera/camera.dart';
 import 'package:blue_anura/constants.dart';
+import 'package:blue_anura/utils/app_info.dart';
 // import 'package:blueanura/utils/first_camera.dart';
 import 'package:flutter/material.dart';
 import 'package:blue_anura/views/auth/login_screen.dart';
@@ -18,7 +19,7 @@ Future<void> main() async {
   //   FirstCamera().camera = cameras.first;
   // }
 
-  // Get a specific camera from the list of available cameras.
+  await AppInfo().readInfo();
 
   runApp(MyApp());
 }

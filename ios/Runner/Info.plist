@@ -45,5 +45,9 @@
     <string>camera</string>
     <key>NSMicrophoneUsageDescription</key>
     <string>microphone</string>
+    <key>NSLocationWhenInUseUsageDescription</key>
+    <string>location</string>
+    <key>NSLocationAlwaysUsageDescription</key>
+    <string>location</string>
 </dict>
 </plist>

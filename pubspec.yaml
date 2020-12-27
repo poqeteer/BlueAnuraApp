@@ -15,7 +15,7 @@ publish_to: 'none' # Remove this line if you wish to publish to pub.dev
 # In iOS, build-name is used as CFBundleShortVersionString while build-number used as CFBundleVersion.
 # Read more about iOS versioning at
 # https://developer.apple.com/library/archive/documentation/General/Reference/InfoPlistKeyReference/Articles/CoreFoundationKeys.html
-version: 1.0.0+1
+version: 0.0.3+4
 
 environment:
   sdk: ">=2.7.0 <3.0.0"
@@ -39,9 +39,9 @@ dev_dependencies:
   rflutter_alert: ^1.1.0
   # mask_text_input_formatter: ^1.1.0
   flutter_masked_text: ^0.8.0
-  location: ^3.1.0
+  location: ^3.2.1
   devicelocale: ^0.3.3
-  form_validator: ">=0.1.1 <2.0.0"
+  form_validator: ">=0.1.7 <2.0.0"
   share: ">=0.6.5+4 <2.0.0"
   shared_preferences: '>=0.5.12+4 <2.0.0'
   flutter_login: ^1.0.14
@@ -56,10 +56,12 @@ dev_dependencies:
   flutter_exif_plugin:
     path: lib/views/camera/widgets/flutter_exif
 #  flutter_exif_plugin: ^0.0.4
-#  package_info: ^0.4.3+2
+  package_info: ^0.4.3+2
 
   exif: ^1.0.3
   adaptive_dialog: ^0.9.3
+
+  device_info: ^1.0.0
 
   # The following was for setting the app icon...
   # run:  flutter pub run flutter_launcher_icons:main

@@ -1,5 +1,5 @@
-import 'dart:math';
-
+// import 'dart:math';
+import 'package:blue_anura/utils/app_info.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:intl/intl.dart';
@@ -73,7 +73,7 @@ class _SendLocationState extends State<SendLocation> {
 
   @override
   Widget build(BuildContext context) {
-    ThemeData theme = Theme.of(context);
+    // ThemeData theme = Theme.of(context);
 
     void buildLocationText() async {
       if (_doneOnce || !mounted) return;
@@ -99,9 +99,7 @@ class _SendLocationState extends State<SendLocation> {
         LocationData _location = await location.getLocation();
         if (mounted)
           setState(() {
-            _locationText = "Location: " +
-                convertDEGToDMS(_location.latitude, true) + " / " +
-                convertDEGToDMS(_location.longitude, false);
+            _locationText = "Location: ${_location.latitude} / ${_location.longitude}";
             _locationData = _location;
           },);
       } else {
@@ -270,10 +268,11 @@ class _SendLocationState extends State<SendLocation> {
                                     _dateTextController.text + " " +
                                     _timeTextController.text + "\n" +
                                     "I am here: " +
-                                    convertDEGToDMS(
-                                        _locationData.latitude, true) + " " +
-                                    convertDEGToDMS(
-                                        _locationData.longitude, false) +
+                                        _locationData.latitude.toString() + " / " +
+                                        _locationData.longitude.toString() +
+                                    "\n\n" +
+                                    "model: ${AppInfo().deviceModel}\n" +
+                                    "os: ${AppInfo().osInfo}" +
                                     "\n\n" +
                                     url + "\n\n" +
                                     "Accuracy: " +
@@ -304,24 +303,24 @@ String formatTime(TimeOfDay time, String locale) {
   return format.format(current);
 }
 
-String convertDEGToDMS (double deg, bool lat) {
-  double dp(double val, int places){
-    double mod = pow(10.0, places);
-    return ((val * mod).round().toDouble() / mod);
-  }
-  double absolute = deg.abs();
-
-  int degrees = absolute.floor();
-  double minutesNotTruncated = (absolute - degrees) * 60;
-  int minutes = minutesNotTruncated.floor();
-  double seconds = (minutesNotTruncated - minutes) * 60;
-
-  String direction = "";
-  if (lat) {
-    direction = deg >= 0 ? "N" : "S";
-  } else {
-    direction = deg >= 0 ? "E" : "W";
-  }
-
-  return degrees.toString() + "°" + minutes.toString() + "'" + dp(seconds, 1).toString() + '"' + direction;
-}
+// String convertDEGToDMS (double deg, bool lat) {
+//   double dp(double val, int places){
+//     double mod = pow(10.0, places);
+//     return ((val * mod).round().toDouble() / mod);
+//   }
+//   double absolute = deg.abs();
+//
+//   int degrees = absolute.floor();
+//   double minutesNotTruncated = (absolute - degrees) * 60;
+//   int minutes = minutesNotTruncated.floor();
+//   double seconds = (minutesNotTruncated - minutes) * 60;
+//
+//   String direction = "";
+//   if (lat) {
+//     direction = deg >= 0 ? "N" : "S";
+//   } else {
+//     direction = deg >= 0 ? "E" : "W";
+//   }
+//
+//   return degrees.toString() + "°" + minutes.toString() + "'" + dp(seconds, 1).toString() + '"' + direction;
+// }

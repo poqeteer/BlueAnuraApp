@@ -215,7 +215,7 @@ class _CameraState extends State<Camera> with TickerProviderStateMixin {
       try {
         await exif.setLatLong(_location.latitude, _location.longitude);
         await exif.setAttribute("UserComment",
-            "BlueAnura v${AppInfo().version}.${AppInfo().buildNum} $msg");
+            "ASCII\0\0\0BlueAnura v${AppInfo().version}.${AppInfo().buildNum} $msg");
 
         // apply attributes
         await exif.saveAttributes();
@@ -242,7 +242,7 @@ class _CameraState extends State<Camera> with TickerProviderStateMixin {
         print("==================================");
       }
 
-    print(Platform.operatingSystemVersion);
+    // print(Platform.operatingSystemVersion);
     // if (Platform.operatingSystemVersion.contains("11")) {
     //   _image.copy('storage/emulated/0/Pictures/$fileName').then((value) {
     //     print("----------------------------------");

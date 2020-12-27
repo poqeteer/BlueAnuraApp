@@ -1,38 +1,41 @@
 import 'package:blue_anura/utils/app_info.dart';
 import 'package:flutter/material.dart';
 import 'package:permission_handler/permission_handler.dart';
+import 'dart:io';
 
 class Home extends StatelessWidget {
   Future<void>_initPermissions () async {
-    if (await Permission.camera
-        .request()
-        .isGranted) {
-      print("camera granted");
-      // Either the permission was already granted before or the user just granted it.
-    }
-    if (await Permission.microphone
-        .request()
-        .isGranted) {
-      print("camera microphone");
-      // Either the permission was already granted before or the user just granted it.
-    }
-    if (await Permission.location
-        .request()
-        .isGranted) {
-      print("location granted");
-      // Either the permission was already granted before or the user just granted it.
-    }
-    if (await Permission.storage
-        .request()
-        .isGranted) {
-      print("storage granted");
-      // Either the permission was already granted before or the user just granted it.
-    }
-    if (await Permission.photos
-        .request()
-        .isGranted) {
-      print("photos granted");
-      // Either the permission was already granted before or the user just granted it.
+    if (Platform.isAndroid) {
+      if (await Permission.camera
+          .request()
+          .isGranted) {
+        print("camera granted");
+        // Either the permission was already granted before or the user just granted it.
+      }
+      if (await Permission.microphone
+          .request()
+          .isGranted) {
+        print("camera microphone");
+        // Either the permission was already granted before or the user just granted it.
+      }
+      if (await Permission.location
+          .request()
+          .isGranted) {
+        print("location granted");
+        // Either the permission was already granted before or the user just granted it.
+      }
+      if (await Permission.storage
+          .request()
+          .isGranted) {
+        print("storage granted");
+        // Either the permission was already granted before or the user just granted it.
+      }
+      if (await Permission.photos
+          .request()
+          .isGranted) {
+        print("photos granted");
+        // Either the permission was already granted before or the user just granted it.
+      }
     }
   }
 
