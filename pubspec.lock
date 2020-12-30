@@ -203,9 +203,9 @@ packages:
   flutter_login:
     dependency: "direct dev"
     description:
-      name: flutter_login
-      url: "https://pub.dartlang.org"
-    source: hosted
+      path: "lib/views/auth/widgets/flutter_login"
+      relative: true
+    source: path
     version: "1.0.14"
   flutter_masked_text:
     dependency: "direct dev"

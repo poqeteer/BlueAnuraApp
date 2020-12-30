@@ -1,6 +1,7 @@
 import 'package:blue_anura/constants.dart';
 import 'package:blue_anura/utils/first_camera.dart';
 import 'package:blue_anura/views/camera/camerawesome.dart';
+import 'package:blue_anura/views/gallery/gallery.dart';
 import 'package:blue_anura/views/widgets/option_button.dart';
 import 'package:blue_anura/views/home/home.dart';
 import 'package:flutter/material.dart';
@@ -50,7 +51,7 @@ class _NavigatorStatefulWidgetState extends State<NavigatorStatefulWidget>with S
   @override
   void initState() {
     super.initState();
-    _tabController = TabController(length: 3, vsync: this);
+    _tabController = TabController(length: 4, vsync: this);
   }
   @override
   void dispose() {
@@ -75,8 +76,12 @@ class _NavigatorStatefulWidgetState extends State<NavigatorStatefulWidget>with S
               // child: Text("Home"),
             ),
             Tab(
-              icon: Icon(Icons.camera),
+              icon: Icon(Icons.photo_camera),
               // child: Text("Survey"),
+            ),
+            Tab(
+              icon: Icon(Icons.photo_library_outlined ),
+              // child: Text("Gallery"),
             ),
             Tab(
               icon: Icon(Icons.location_pin),
@@ -91,9 +96,11 @@ class _NavigatorStatefulWidgetState extends State<NavigatorStatefulWidget>with S
         )
     ),
       body: TabBarView(
+        physics: NeverScrollableScrollPhysics(),
         children: [
           Home(),
           Camera(),
+          Gallery(),
           SendLocation()
         ],
         controller: _tabController,

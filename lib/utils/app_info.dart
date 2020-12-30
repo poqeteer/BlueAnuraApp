@@ -16,7 +16,7 @@ class AppInfo {
   Future<void> readInfo() async {
     PackageInfo packageInfo = await PackageInfo.fromPlatform();
     version = packageInfo.version;
-    buildNum= packageInfo.buildNumber;
+    buildNum= int.parse(packageInfo.buildNumber) > 1000 ? (int.parse(packageInfo.buildNumber) - 1000).toString() : packageInfo.buildNumber;
     DeviceInfoPlugin deviceInfo = DeviceInfoPlugin();
     if (Platform.isAndroid) {
       AndroidDeviceInfo androidInfo = await deviceInfo.androidInfo;

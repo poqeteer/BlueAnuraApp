@@ -15,7 +15,7 @@ publish_to: 'none' # Remove this line if you wish to publish to pub.dev
 # In iOS, build-name is used as CFBundleShortVersionString while build-number used as CFBundleVersion.
 # Read more about iOS versioning at
 # https://developer.apple.com/library/archive/documentation/General/Reference/InfoPlistKeyReference/Articles/CoreFoundationKeys.html
-version: 0.0.3+4
+version: 0.0.3+5
 
 environment:
   sdk: ">=2.7.0 <3.0.0"
@@ -44,7 +44,9 @@ dev_dependencies:
   form_validator: ">=0.1.7 <2.0.0"
   share: ">=0.6.5+4 <2.0.0"
   shared_preferences: '>=0.5.12+4 <2.0.0'
-  flutter_login: ^1.0.14
+  flutter_login:
+    path: lib/views/auth/widgets/flutter_login
+#  flutter_login: ^1.0.14
 #  image: ^2.1.19
   path_provider: ^1.6.24
 #  rxdart: ^0.25.0
@@ -63,15 +65,20 @@ dev_dependencies:
 
   device_info: ^1.0.0
 
-  # The following was for setting the app icon...
-  # run:  flutter pub run flutter_launcher_icons:main
+#  # The following was for setting the app icon...
+#  # Uncomment to reset the app icon
+#  # After setting up flutter_icons below run:
+#  #  ᐅ flutter pub run flutter_launcher_icons:main
 #  flutter_launcher_icons: "^0.8.0"
-
-# Uncomment to following to setup app icon
+#
+## Uncomment to following to setup app icon
 #flutter_icons:
-#  image_path: "assets/images/favicon.gif"
+#  # Use this png for android and set android: true, ios: false
+#  image_path: "assets/images/cba-864-transparent.png"
 #  android: true
-#  ios: true
+#  # Use this png for ios and set android: false, ios: true
+##  image_path: "assets/images/cba-864-blue.png"
+#  ios: false
 
 # For information on the generic Dart part of this file, see the
 # following page: https://dart.dev/tools/pub/pubspec
@@ -115,8 +122,7 @@ flutter:
   # For details regarding fonts from package dependencies,
   # see https://flutter.dev/custom-fonts/#from-packages
   assets:
-    - assets/images/favicon.gif
-    - assets/images/blue_frog.png
+    - assets/images/cba-96-transparent.png
 
   fonts:
     - family: Grandstander

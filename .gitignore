@@ -48,4 +48,5 @@ app.*.map.json
 # Private information...
 /android/key.properties
 
-/lib/views/camera/widgets/gallery_saver
+/lib/views/camera/widgets/flutter_exif
+/lib/views/auth/widgets/flutter_login

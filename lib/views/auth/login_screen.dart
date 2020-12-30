@@ -1,3 +1,5 @@
+import 'package:blue_anura/constants.dart';
+import 'package:blue_anura/utils/app_info.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_login/flutter_login.dart';
 import 'package:blue_anura/views/navigation/dashboard_screen.dart';
@@ -34,12 +36,14 @@ class LoginScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-        height: 500.0,
-      child: Container(
+    return Scaffold(
+      body: SafeArea(
+        bottom: true,
+        top: true,
         child: FlutterLogin(
           title: 'Blue Anura',
-          logo: 'assets/images/blue_frog.png',
+          copyright: 'Copyright © 2021, Blue Anura || v${AppInfo().version}.${AppInfo().buildNum}',
+          logo: 'assets/images/cba-96-transparent.png',
           onLogin: _authUser,
           onSignup: _authUser,
           onSubmitAnimationCompleted: () {
@@ -49,6 +53,8 @@ class LoginScreen extends StatelessWidget {
           },
           onRecoverPassword: _recoverPassword,
           theme: LoginTheme(
+            copyrightBackgroundColor: Constants.mainBackgroundColor,
+            copyrightTextStyle: TextStyle(color: Colors.white),
             accentColor: Colors.orange,
             errorColor: Colors.deepOrange,
             titleStyle: TextStyle(
