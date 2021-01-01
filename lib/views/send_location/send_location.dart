@@ -1,4 +1,6 @@
 // import 'dart:math';
+import 'dart:io';
+
 import 'package:blue_anura/utils/app_info.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -36,10 +38,37 @@ class _SendLocationState extends State<SendLocation> {
 
   String _locale;
 
+  TextInputType phoneKeyboardType = TextInputType.phone;
+  final focusPhone = FocusNode();
+  final focusEmail = FocusNode();
+  Widget phoneButton = SizedBox();
+  bool _showFloatingButton = false;
+
   @override
   void initState() {
     super.initState();
     initPlatformState();
+    if ( Platform.operatingSystem == 'ios')
+      // phoneKeyboardType = TextInputType.text;
+      focusPhone.addListener(_handleFocusChange);
+  }
+
+  @override
+  void dispose() {
+    if ( Platform.operatingSystem == 'ios')
+      focusPhone.removeListener(_handleFocusChange);
+    focusPhone.dispose();
+    focusEmail.dispose();
+    super.dispose();
+  }
+
+  void _handleFocusChange() {
+    if ( Platform.operatingSystem == 'ios')
+      if (focusPhone.hasFocus) {
+        setState(() {_showFloatingButton = true;});
+      } else {
+        setState(() {_showFloatingButton = false;});
+      }
   }
 
   // Platform messages are asynchronous, so we initialize in an async method.
@@ -134,28 +163,35 @@ class _SendLocationState extends State<SendLocation> {
                     onPressed: () => setState(() {_doneOnce = false; _locationText = "Looking up location..."; }),
                   ),
                   TextFormField(
+                    autofocus: true,
                     decoration: const InputDecoration(
                       icon: const Icon(Icons.person),
                       hintText: 'Enter your first and last name',
                       labelText: 'From',
                     ),
                     controller: _nameTextController,
+                    textInputAction:  TextInputAction.next,
+                    onFieldSubmitted: (_) => FocusScope.of(context).requestFocus(focusPhone),
                     validator: ValidationBuilder().minLength(1, "Name is required").build(),
                   ),
                   TextFormField(
+                    focusNode: focusPhone,
                     decoration: const InputDecoration(
                       icon: const Icon(Icons.phone),
                       hintText: '(000) 000-0000',
                       labelText: 'Phone',
                     ),
-                    keyboardType: TextInputType.phone,
+                    keyboardType: phoneKeyboardType,
                     inputFormatters: [
                       FilteringTextInputFormatter.digitsOnly,
                     ],
                     controller: _phoneTextController,
+                    textInputAction:  TextInputAction.next,
+                    onFieldSubmitted: (_) => FocusScope.of(context).requestFocus(focusEmail),
                     validator: ValidationBuilder().regExp(RegExp(r"^(\+\d{1,2}\s)?\(?\d{3}\)?[\s.-]\d{3}[\s.-]\d{4}$"), "Phone number required").build(),
                   ),
                   TextFormField(
+                    focusNode: focusEmail,
                     decoration: const InputDecoration(
                       icon: const Icon(Icons.email),
                       hintText: 'Enter your email address',
@@ -272,7 +308,8 @@ class _SendLocationState extends State<SendLocation> {
                                         _locationData.longitude.toString() +
                                     "\n\n" +
                                     "model: ${AppInfo().deviceModel}\n" +
-                                    "os: ${AppInfo().osInfo}" +
+                                    "os: ${AppInfo().osInfo}\n" +
+                                    "blueanura: ${AppInfo().version}.${AppInfo().buildNum}" +
                                     "\n\n" +
                                     url + "\n\n" +
                                     "Accuracy: " +
@@ -291,6 +328,18 @@ class _SendLocationState extends State<SendLocation> {
                   ),
                 ],
               ))),
+      floatingActionButton: Visibility(
+        visible: _showFloatingButton,
+        child: FloatingActionButton.extended(
+            onPressed: () {
+              FocusScope.of(context).requestFocus(focusEmail);
+            },
+            label: Text('   Next   '),
+            icon: Icon(Icons.navigate_next),
+            backgroundColor: Colors.grey,
+          ),
+        ),
+      floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
     );
   }
 }

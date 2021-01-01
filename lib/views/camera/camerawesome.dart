@@ -180,20 +180,20 @@ class _CameraState extends State<Camera> with TickerProviderStateMixin {
 
     // final String path = await ExtStorage.getExternalStoragePublicDirectory(ExtStorage.DIRECTORY_PICTURES);
     // final String filePath = '$path/photo_test.jpg';
-    Stopwatch stopwatch = new Stopwatch()..start();
+    // Stopwatch stopwatch = new Stopwatch()..start();
     await _pictureController.takePicture(filePath);
-    print('takePicture: ${stopwatch.elapsed}');
+    // print('takePicture: ${stopwatch.elapsed}');
     // lets just make our phone vibrate
     HapticFeedback.mediumImpact();
 
     _lastPhotoPath = filePath;
     setState(() {});
-    print('setState: ${stopwatch.elapsed}');
+    // print('setState: ${stopwatch.elapsed}');
     if (_previewAnimationController.status == AnimationStatus.completed) {
       _previewAnimationController.reset();
     }
     _previewAnimationController.forward();
-    print('preview: ${stopwatch.elapsed}');
+    // print('preview: ${stopwatch.elapsed}');
     print("----------------------------------");
     print("TAKE PHOTO CALLED");
     File _image = File(filePath);
@@ -203,26 +203,25 @@ class _CameraState extends State<Camera> with TickerProviderStateMixin {
     print("----------------------------------");
 
     final exif = FlutterExif.fromPath(filePath);
-    String msg = '';
     LocationData _location;
     try {
       _location = await BuildLocation.buildLocationText();
     } catch(e) {
-      msg = e.toString();
-      await showOkAlertDialog(title: "Location Error", message: msg, context: context);
+      await showOkAlertDialog(title: "Location Error", message: e.toString(), context: context);
     }
     if (_location != null)
       try {
         await exif.setLatLong(_location.latitude, _location.longitude);
         await exif.setAttribute("UserComment",
-            "ASCII\0\0\0BlueAnura v${AppInfo().version}.${AppInfo().buildNum} $msg");
+            "ASCII\0\0\0$fileName|Cat|SubCat|Spec|Comment|${AppInfo().version}.${AppInfo().buildNum}");
 
         // apply attributes
         await exif.saveAttributes();
         print("----------------------------------");
-        print('exif: ${stopwatch.elapsed}');
+        // print('exif: ${stopwatch.elapsed}');
         print("exif updated: $_location");
         print("----------------------------------");
+
 
         // var bytes = await _image.readAsBytes();
         // var tags = await readExifFromBytes(bytes);

@@ -451,6 +451,13 @@ packages:
       url: "https://pub.dartlang.org"
     source: hosted
     version: "3.1.0"
+  photo_gallery:
+    dependency: "direct dev"
+    description:
+      name: photo_gallery
+      url: "https://pub.dartlang.org"
+    source: hosted
+    version: "0.3.0"
   platform:
     dependency: transitive
     description:
@@ -659,6 +666,13 @@ packages:
       url: "https://pub.dartlang.org"
     source: hosted
     version: "0.1.6"
+  transparent_image:
+    dependency: "direct dev"
+    description:
+      name: transparent_image
+      url: "https://pub.dartlang.org"
+    source: hosted
+    version: "1.0.0"
   typed_data:
     dependency: transitive
     description:

@@ -59,11 +59,14 @@ dev_dependencies:
     path: lib/views/camera/widgets/flutter_exif
 #  flutter_exif_plugin: ^0.0.4
   package_info: ^0.4.3+2
+  device_info: ^1.0.0
 
   exif: ^1.0.3
   adaptive_dialog: ^0.9.3
 
-  device_info: ^1.0.0
+  photo_gallery: ^0.3.0
+  transparent_image: ^1.0.0
+
 
 #  # The following was for setting the app icon...
 #  # Uncomment to reset the app icon
