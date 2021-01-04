@@ -1,7 +1,7 @@
+// import 'package:blue_anura/utils/first_camera.dart';
 // import 'package:camera/camera.dart';
 import 'package:blue_anura/constants.dart';
 import 'package:blue_anura/utils/app_info.dart';
-// import 'package:blueanura/utils/first_camera.dart';
 import 'package:flutter/material.dart';
 import 'package:blue_anura/views/auth/login_screen.dart';
 
@@ -9,6 +9,12 @@ Future<void> main() async {
   // Ensure that plugin services are initialized so that `availableCameras()`
   // can be called before `runApp()`
   WidgetsFlutterBinding.ensureInitialized();
+  // try {
+  //   WidgetsFlutterBinding.ensureInitialized();
+  //   FirstCamera().cameras = await availableCameras();
+  // } on CameraException catch (e) {
+  //   print('Error: ${e.code}\nError Message: ${e.description}');
+  // }
 
   // Obtain a list of the available cameras on the device.
   // final cameras = await availableCameras();

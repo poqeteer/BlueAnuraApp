@@ -1,7 +1,7 @@
 import 'package:blue_anura/constants.dart';
 // import 'package:blue_anura/utils/first_camera.dart';
 import 'package:blue_anura/views/camera/camerawesome.dart';
-import 'package:blue_anura/views/gallery/gallery.dart';
+import 'package:blue_anura/views/survey/survey.dart';
 // import 'package:blue_anura/views/widgets/option_button.dart';
 import 'package:blue_anura/views/home/home.dart';
 import 'package:flutter/material.dart';
@@ -99,7 +99,7 @@ class _NavigatorStatefulWidgetState extends State<NavigatorStatefulWidget>with S
         children: [
           Home(),
           Camera(),
-          Gallery(),
+          Survey(),
           SendLocation()
         ],
         controller: _tabController,

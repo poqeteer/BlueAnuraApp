@@ -9,7 +9,7 @@ class FirstCamera {
   factory FirstCamera() {
     return _firstCamera;
   }
-  // CameraDescription camera;
+  // List<CameraDescription> cameras = [];
 
   FirstCamera._internal();
 }

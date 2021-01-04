@@ -9,7 +9,6 @@ class BottomBarWidget extends StatelessWidget {
   final AnimationController rotationController;
   final ValueNotifier<CameraOrientations> orientation;
   final ValueNotifier<CaptureModes> captureMode;
-  final bool isRecording;
   final Function onZoomInTap;
   final Function onZoomOutTap;
   final Function onCaptureTap;
@@ -18,7 +17,6 @@ class BottomBarWidget extends StatelessWidget {
     Key key,
     @required this.rotationController,
     @required this.orientation,
-    @required this.isRecording,
     @required this.captureMode,
     @required this.onZoomOutTap,
     @required this.onZoomInTap,
@@ -53,7 +51,7 @@ class BottomBarWidget extends StatelessWidget {
                     CameraButton(
                       key: ValueKey('cameraButton'),
                       captureMode: captureMode.value,
-                      isRecording: isRecording,
+                      isRecording: false,
                       onTap: () => onCaptureTap?.call(),
                       // orientation: orientation,
                       // rotationController: rotationController,

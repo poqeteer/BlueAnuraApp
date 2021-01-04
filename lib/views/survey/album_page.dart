@@ -1,11 +1,11 @@
-import 'package:blue_anura/views/gallery/viewer_page.dart';
+import 'package:blue_anura/views/camera/camerawesome.dart';
+import 'package:blue_anura/views/survey/viewer_page.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/cupertino.dart';
 
 import 'package:photo_gallery/photo_gallery.dart';
 import 'package:flutter/rendering.dart';
 import 'package:transparent_image/transparent_image.dart';
-import 'package:adaptive_dialog/adaptive_dialog.dart';
 
 class AlbumPage extends StatefulWidget {
   final Album album;
@@ -18,7 +18,7 @@ class AlbumPage extends StatefulWidget {
 
 class AlbumPageState extends State<AlbumPage> {
   List<Medium> _media;
-
+  Widget gallery = Center(child: Text("Not started"),);
   @override
   void initState() {
     super.initState();
@@ -43,7 +43,9 @@ class AlbumPageState extends State<AlbumPage> {
           double ratio = gridWidth / gridHeight;
           return Container(
             padding: EdgeInsets.all(5),
-            child: GridView.count(
+            child: _media ==null || _media.isEmpty
+                ? Center(child: Text("Not started yet"))
+                : GridView.count(
               childAspectRatio: ratio,
               crossAxisCount: 3,
               mainAxisSpacing: 1.0,
@@ -91,13 +93,6 @@ class AlbumPageState extends State<AlbumPage> {
           );
         },
       ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: () async {
-          await showOkAlertDialog(title: "link to Camera", message: "TBD", context: context);
-        },
-        child: Icon(Icons.add),
-        backgroundColor: Colors.green,
-      ),
     );
   }
 }
@@ -105,14 +100,16 @@ class AlbumPageState extends State<AlbumPage> {
 Widget getTextDate(Medium medium) {
   DateTime date = medium.creationDate ??
       medium.modifiedDate;
-  String d = date?.toLocal().toString().split(" ")[1].substring(0, 8);
-  return Text(d,
-      maxLines: 1,
-      textAlign: TextAlign.start,
-      style: TextStyle(
-        height: 1.2,
-        fontSize: 16,
-      )
-  );
+  if (date != null) {
+    String d = date?.toLocal().toString()?.split(" ")[1].substring(0, 8);
+    return Text(d,
+        maxLines: 1,
+        textAlign: TextAlign.start,
+        style: TextStyle(
+          height: 1.2,
+          fontSize: 16,
+        )
+    );
+  } else return Text("unknown");
 }
 

@@ -4,7 +4,8 @@ import 'dart:typed_data';
 
 import 'package:blue_anura/utils/app_info.dart';
 import 'package:blue_anura/utils/get_location.dart';
-import 'package:blue_anura/utils/storage_utils.dart';
+// import 'package:blue_anura/utils/storage_utils.dart';
+import 'package:blue_anura/views/widgets/base_nav_page.dart';
 import 'package:camerawesome/models/orientations.dart';
 import 'package:blue_anura/views/camera/widgets/bottom_bar.dart';
 import 'package:blue_anura/views/camera/widgets/preview_card.dart';
@@ -21,6 +22,8 @@ import 'package:location/location.dart';
 // import 'package:exif/exif.dart';
 import 'package:adaptive_dialog/adaptive_dialog.dart';
 
+import 'package:r_album/r_album.dart';
+
 class Camera extends StatefulWidget {
   // just for E2E test. if true we create our images names from datetime.
   // Else it's just a name to assert image exists
@@ -34,7 +37,7 @@ class Camera extends StatefulWidget {
 
 class _CameraState extends State<Camera> with TickerProviderStateMixin {
   String _lastPhotoPath;
-  bool _fullscreen = false, _isRecordingVideo = false;
+  bool _fullscreen = false;
 
   ValueNotifier<CameraFlashes> _switchFlash = ValueNotifier(CameraFlashes.NONE);
   ValueNotifier<double> _zoomNotifier = ValueNotifier(0);
@@ -93,21 +96,22 @@ class _CameraState extends State<Camera> with TickerProviderStateMixin {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      body: Stack(
-        fit: StackFit.expand,
-        children: <Widget>[
-          this._fullscreen ? buildFullscreenCamera() : buildSizedScreenCamera(),
-          _buildInterface(),
-          (!_isRecordingVideo)
-              ? PreviewCardWidget(
-            lastPhotoPath: _lastPhotoPath,
-            orientation: _orientation,
-            previewAnimation: _previewAnimation,
-          )
-              : Container(),
-        ],
-      ),
+    return BaseNavPage(
+        title: "",
+        body: Scaffold(
+        body: Stack(
+          fit: StackFit.expand,
+          children: <Widget>[
+            this._fullscreen ? buildFullscreenCamera() : buildSizedScreenCamera(),
+            _buildInterface(),
+             PreviewCardWidget(
+              lastPhotoPath: _lastPhotoPath,
+              orientation: _orientation,
+              previewAnimation: _previewAnimation,
+            )
+          ],
+        ),
+      )
     );
   }
 
@@ -162,7 +166,6 @@ class _CameraState extends State<Camera> with TickerProviderStateMixin {
           onCaptureTap: _takePhoto,
           rotationController: _iconsAnimationController,
           orientation: _orientation,
-          isRecording: _isRecordingVideo,
           captureMode: _captureMode,
         ),
       ],
@@ -197,7 +200,7 @@ class _CameraState extends State<Camera> with TickerProviderStateMixin {
     print("----------------------------------");
     print("TAKE PHOTO CALLED");
     File _image = File(filePath);
-    print("==> hastakePhoto : ${_image.exists()} | path : $filePath");
+    print("==> path : $filePath");
     // final img = imgUtils.decodeImage(file.readAsBytesSync());
     // print("==> img.width : ${img.width} | img.height : ${img.height}");
     print("----------------------------------");
@@ -241,34 +244,25 @@ class _CameraState extends State<Camera> with TickerProviderStateMixin {
         print("==================================");
       }
 
-    // print(Platform.operatingSystemVersion);
-    // if (Platform.operatingSystemVersion.contains("11")) {
-    //   _image.copy('storage/emulated/0/Pictures/$fileName').then((value) {
+    await RAlbum.createAlbum("BlueAnura").then((value) => print(value));
+    await RAlbum.saveAlbum("BlueAnura", [filePath],).then((value) => print(value));
+    _image.delete();
+
+    // StorageUtils.createFolder("DCIM/BlueAnura").then((path) {
+    //   _image.copy('$path/$fileName').then((value) {
     //     print("----------------------------------");
-    //     print("IMAGE MOVED: Success");
+    //         print("IMAGE MOVED: Success");
     //     print("==> from: $filePath to $value");
     //     print("----------------------------------");
     //     _image.delete();
     //   }).catchError((error) {
-    //     showOkAlertDialog(
-    //         title: "Copy Error (SDK30)", message: error.toString(), context: context);
+    //     showOkAlertDialog(title: "Copy Error", message: error.toString(), context: context);
     //   });
-    // } else
-    StorageUtils.createFolder("DCIM/BlueAnura").then((path) {
-      _image.copy('$path/$fileName').then((value) {
-        print("----------------------------------");
-            print("IMAGE MOVED: Success");
-        print("==> from: $filePath to $value");
-        print("----------------------------------");
-        _image.delete();
-      }).catchError((error) {
-        showOkAlertDialog(title: "Copy Error", message: error.toString(), context: context);
-      });
-    }).catchError((error){
-      print("----------------------------------");
-      print("IMAGE MOVED: Failed ${error.toString()}");
-      print("----------------------------------");
-    });
+    // }).catchError((error){
+    //   print("----------------------------------");
+    //   print("IMAGE MOVED: Failed ${error.toString()}");
+    //   print("----------------------------------");
+    // });
   }
 
   _buildChangeResolutionDialog() {
