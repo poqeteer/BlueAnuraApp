@@ -2,27 +2,34 @@ import 'dart:async';
 import 'dart:io';
 import 'dart:typed_data';
 
-import 'package:blue_anura/utils/app_info.dart';
-import 'package:blue_anura/utils/get_location.dart';
+// import 'package:blue_anura/utils/app_info.dart';
+// import 'package:blue_anura/utils/get_location.dart';
+import 'package:blue_anura/views/camera/survey_card_page.dart';
 // import 'package:blue_anura/utils/storage_utils.dart';
 import 'package:blue_anura/views/widgets/base_nav_page.dart';
 import 'package:camerawesome/models/orientations.dart';
 import 'package:blue_anura/views/camera/widgets/bottom_bar.dart';
-import 'package:blue_anura/views/camera/widgets/preview_card.dart';
+// import 'package:blue_anura/views/camera/widgets/preview_card.dart';
 import 'package:blue_anura/views/camera/widgets/top_bar.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:intl/intl.dart';
+// import 'package:adaptive_dialog/adaptive_dialog.dart';
+// import 'package:flutter_exif_plugin/flutter_exif_plugin.dart';
+// import 'package:location/location.dart';
+
 // import 'package:image/image.dart' as imgUtils;
 // import 'package:gallery_saver/gallery_saver.dart';
 
 import 'package:path_provider/path_provider.dart';
 import 'package:camerawesome/camerawesome_plugin.dart';
-import 'package:flutter_exif_plugin/flutter_exif_plugin.dart';
-import 'package:location/location.dart';
-// import 'package:exif/exif.dart';
-import 'package:adaptive_dialog/adaptive_dialog.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
-import 'package:r_album/r_album.dart';
+import '../../constants.dart';
+// import 'package:flutter_exif_plugin/flutter_exif_plugin.dart';
+
+
+// import 'package:r_album/r_album.dart';
 
 class Camera extends StatefulWidget {
   // just for E2E test. if true we create our images names from datetime.
@@ -36,7 +43,7 @@ class Camera extends StatefulWidget {
 }
 
 class _CameraState extends State<Camera> with TickerProviderStateMixin {
-  String _lastPhotoPath;
+  // String _lastPhotoPath;
   bool _fullscreen = false;
 
   ValueNotifier<CameraFlashes> _switchFlash = ValueNotifier(CameraFlashes.NONE);
@@ -55,10 +62,14 @@ class _CameraState extends State<Camera> with TickerProviderStateMixin {
   List<Size> _availableSizes;
 
   AnimationController _iconsAnimationController, _previewAnimationController;
-  Animation<Offset> _previewAnimation;
+  // Animation<Offset> _previewAnimation;
   Timer _previewDismissTimer;
   // StreamSubscription<Uint8List> previewStreamSub;
-  Stream<Uint8List> previewStream;
+  // Stream<Uint8List> previewStream;
+
+  String _orgId;
+  String _locId;
+  int _sequence;
 
   @override
   void initState() {
@@ -72,16 +83,28 @@ class _CameraState extends State<Camera> with TickerProviderStateMixin {
       duration: const Duration(milliseconds: 500),
       vsync: this,
     );
-    _previewAnimation = Tween<Offset>(
-      begin: const Offset(-2.0, 0.0),
-      end: Offset.zero,
-    ).animate(
-      CurvedAnimation(
-        parent: _previewAnimationController,
-        curve: Curves.elasticOut,
-        reverseCurve: Curves.elasticIn,
-      ),
-    );
+    // _previewAnimation = Tween<Offset>(
+    //   begin: const Offset(-2.0, 0.0),
+    //   end: Offset.zero,
+    // ).animate(
+    //   CurvedAnimation(
+    //     parent: _previewAnimationController,
+    //     curve: Curves.elasticOut,
+    //     reverseCurve: Curves.elasticIn,
+    //   ),
+    // );
+    _initState();
+  }
+
+  Future<void> _initState() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    if (!mounted) return;
+
+    setState((){
+      _orgId = prefs.get(Constants.PREF_LAST_ORG) ?? "";
+      _locId = prefs.get(Constants.PREF_LAST_LOC) ?? "";
+      _sequence = prefs.getInt(Constants.PREF_SEQUENCE) ?? 1;
+    });
   }
 
   @override
@@ -97,18 +120,18 @@ class _CameraState extends State<Camera> with TickerProviderStateMixin {
   @override
   Widget build(BuildContext context) {
     return BaseNavPage(
-        title: "",
+        title: "Organization: ${_orgId} | Location: ${_locId}",
         body: Scaffold(
         body: Stack(
           fit: StackFit.expand,
           children: <Widget>[
             this._fullscreen ? buildFullscreenCamera() : buildSizedScreenCamera(),
             _buildInterface(),
-             PreviewCardWidget(
-              lastPhotoPath: _lastPhotoPath,
-              orientation: _orientation,
-              previewAnimation: _previewAnimation,
-            )
+            //  PreviewCardWidget(
+            //   lastPhotoPath: _lastPhotoPath,
+            //   orientation: _orientation,
+            //   previewAnimation: _previewAnimation,
+            // )
           ],
         ),
       )
@@ -177,7 +200,7 @@ class _CameraState extends State<Camera> with TickerProviderStateMixin {
     final testDir =
       await Directory('${extDir.path}/test').create(recursive: true);
     final String fileName = widget.randomPhotoName
-        ? '${DateTime.now().millisecondsSinceEpoch}.jpg'
+        ? '${_orgId}_${_locId}_${DateFormat('yyyyMMdd').format(DateTime.now())}_${_sequence.toString().padLeft(3, '0')}.jpg'
         : 'photo_test.jpg';
     final String filePath ='${testDir.path}/$fileName';
 
@@ -189,64 +212,28 @@ class _CameraState extends State<Camera> with TickerProviderStateMixin {
     // lets just make our phone vibrate
     HapticFeedback.mediumImpact();
 
-    _lastPhotoPath = filePath;
+    // _lastPhotoPath = filePath;
     setState(() {});
     // print('setState: ${stopwatch.elapsed}');
-    if (_previewAnimationController.status == AnimationStatus.completed) {
-      _previewAnimationController.reset();
-    }
-    _previewAnimationController.forward();
+    // if (_previewAnimationController.status == AnimationStatus.completed) {
+    //   _previewAnimationController.reset();
+    // }
+    // _previewAnimationController.forward();
     // print('preview: ${stopwatch.elapsed}');
     print("----------------------------------");
     print("TAKE PHOTO CALLED");
-    File _image = File(filePath);
+    // File _image = File(filePath);
     print("==> path : $filePath");
     // final img = imgUtils.decodeImage(file.readAsBytesSync());
     // print("==> img.width : ${img.width} | img.height : ${img.height}");
     print("----------------------------------");
 
-    final exif = FlutterExif.fromPath(filePath);
-    LocationData _location;
-    try {
-      _location = await BuildLocation.buildLocationText();
-    } catch(e) {
-      await showOkAlertDialog(title: "Location Error", message: e.toString(), context: context);
+    final result = await Navigator.of(context).push(MaterialPageRoute(
+        builder: (context) => SurveyCardPage(filePath)));
+
+    if (result == 'Saved') {
+      Navigator.pop(context, result);
     }
-    if (_location != null)
-      try {
-        await exif.setLatLong(_location.latitude, _location.longitude);
-        await exif.setAttribute("UserComment",
-            "ASCII\0\0\0$fileName|Cat|SubCat|Spec|Comment|${AppInfo().version}.${AppInfo().buildNum}");
-
-        // apply attributes
-        await exif.saveAttributes();
-        print("----------------------------------");
-        // print('exif: ${stopwatch.elapsed}');
-        print("exif updated: $_location");
-        print("----------------------------------");
-
-
-        // var bytes = await _image.readAsBytes();
-        // var tags = await readExifFromBytes(bytes);
-        // var sb = StringBuffer();
-        //
-        // tags.forEach((k, v) {
-        //   if (k.contains("GPS")) sb.write("$k: $v \n");
-        // });
-        //
-        // print(sb.toString());
-
-        // await showOkAlertDialog(title: "EXIF", message: sb.toString(), context: context);
-      } catch (e) {
-        print("==================================");
-        print(e.toString());
-        await showOkAlertDialog(title: "EXIF Error", message: e.toString(), context: context);
-        print("==================================");
-      }
-
-    await RAlbum.createAlbum("BlueAnura").then((value) => print(value));
-    await RAlbum.saveAlbum("BlueAnura", [filePath],).then((value) => print(value));
-    _image.delete();
 
     // StorageUtils.createFolder("DCIM/BlueAnura").then((path) {
     //   _image.copy('$path/$fileName').then((value) {

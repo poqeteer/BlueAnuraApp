@@ -1,10 +1,14 @@
 import 'dart:async';
 import 'dart:io';
 
+import 'package:blue_anura/constants.dart';
 import 'package:blue_anura/views/camera/camerawesome.dart';
 import 'package:flutter/material.dart';
+import 'package:form_validator/form_validator.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:photo_gallery/photo_gallery.dart';
+import 'package:r_album/r_album.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 import 'album_page.dart';
 
@@ -14,8 +18,15 @@ class Survey extends StatefulWidget {
 }
 
 class _SurveyState extends State<Survey> {
-  List<Album> _albums;
+  final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
+
+  TextEditingController _orgTextController = new TextEditingController();
+  TextEditingController _locTextController = new TextEditingController();
+
+  Album _album;
   bool _loading = false;
+  bool _activeSurvey = false;
+  bool _hasMedia = false;
 
   @override
   void initState() {
@@ -25,25 +36,39 @@ class _SurveyState extends State<Survey> {
   }
 
   Future<void> initAsync() async {
-    if (await _promptPermissionSetting()) {
-      List<Album> albums =
-      await PhotoGallery.listAlbums(mediumType: MediumType.image);
+    // Create the album if it exists or not...
+    await RAlbum.createAlbum(Constants.ALBUM_NAME).then((value) => print(value));
 
-      List<Album> blueAnuraAlbum = [];
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    if (await _promptPermissionSetting()) {
+      List<Album> albums = await PhotoGallery.listAlbums(mediumType: MediumType.image);
+
+      Album blueAnuraAlbum;
       for(Album album in albums) {
-        if (album.name == 'BlueAnura') {
-          blueAnuraAlbum.add(album);
+        if (album.name == Constants.ALBUM_NAME) {
+          blueAnuraAlbum = album;
+          await album.listMedia().then(
+                  (MediaPage media) =>
+                    _hasMedia = media.items.isNotEmpty
+          );  // Should just pass the media list along to Album?
+                                                                                                  // Problem is who does the refresh?
+          break;
         }
       }
 
+      if (!mounted) return;
+
+      if (blueAnuraAlbum == null) print("----------\nalbum ${Constants.ALBUM_NAME} not found\n----------");
+
       setState(() {
-        _albums = blueAnuraAlbum;
+        _album = blueAnuraAlbum;
         _loading = false;
+        _activeSurvey = prefs.getBool(Constants.PREF_ACTIVE_SURVEY) ?? false;
+
+        _orgTextController.text = prefs.get(Constants.PREF_LAST_ORG) ?? "";
+        _locTextController.text = prefs.get(Constants.PREF_LAST_LOC) ?? "";
       });
     }
-    setState(() {
-      _loading = false;
-    });
   }
 
   Future<bool> _promptPermissionSetting() async {
@@ -56,24 +81,117 @@ class _SurveyState extends State<Survey> {
     return false;
   }
 
+  Future<void> _launchCamera() async {
+    final result = await Navigator.of(context).push(MaterialPageRoute(
+        builder: (context) => Camera()));
+    if (result != null) {
+      ScaffoldMessenger.of(context)
+        ..removeCurrentSnackBar()
+        ..showSnackBar(SnackBar(content: Text("$result")));
+      setState(() {
+        _loading = true;
+      });
+    }
+    await initAsync();
+  }
+
   @override
   Widget build(BuildContext context) {
+
     return Scaffold(
+        appBar: PreferredSize(
+              preferredSize: Size.fromHeight(_hasMedia && _activeSurvey ? 50.0 : 0.0),
+              child: AppBar(title: Text('Organization: ${_orgTextController.text} | Location: ${_locTextController.text}'))
+            ),
         body: _loading
             ? Center(
-          child: CircularProgressIndicator(),
-        )
-            : _albums == null || _albums.isEmpty
-            ? Center(child: Text("Survey not started yet"))
-            : AlbumPage(_albums[0]),
-        floatingActionButton: FloatingActionButton(
-          onPressed: () async {
-            Navigator.of(context).push(MaterialPageRoute(
-                builder: (context) => Camera()));
-          },
-          child: Icon(Icons.add),
-          backgroundColor: Colors.green,
-        )
+                child: CircularProgressIndicator(),
+              )
+            : _hasMedia && _activeSurvey
+              ? AlbumPage(_album)
+              :Form(
+            key: _formKey,
+            autovalidateMode: AutovalidateMode.always,
+            child: ListView(
+              padding: const EdgeInsets.symmetric(horizontal: 16.0),
+              children: <Widget>[
+                Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 16.0),
+                  child: Text(
+                      'Obviously a dummy form for now...\n\nProbably some sort of list of organizations and a curated list of locations?\n\nFull page is overkill. Probably should just be a dialog.'
+                  ),
+                ),
+                TextFormField(
+                  autofocus: true,
+                  decoration: const InputDecoration(
+                    icon: const Icon(Icons.business),
+                    hintText: 'Enter Organization Identifier',
+                    labelText: 'Organization',
+                  ),
+                  controller: _orgTextController,
+                  textInputAction:  TextInputAction.next,
+                  onFieldSubmitted: (_) => FocusScope.of(context).nextFocus(),
+                  validator: ValidationBuilder().minLength(1, "Organization ID is required").build(),
+                ),
+                TextFormField(
+                  autofocus: true,
+                  decoration: const InputDecoration(
+                    icon: const Icon(Icons.location_pin),
+                    hintText: 'Enter Location Identifier',
+                    labelText: 'Location',
+                  ),
+                  controller: _locTextController,
+                  textInputAction:  TextInputAction.next,
+                  validator: ValidationBuilder().minLength(1, "Location ID is required").build(),
+                ),
+                Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 20.0),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.end,
+                      children: [
+                        OutlinedButton(
+                          onPressed: () async {
+                            SharedPreferences prefs = await SharedPreferences.getInstance();
+                            setState(() {
+                              _orgTextController.text = prefs.get(Constants.PREF_LAST_ORG) ?? "";
+                              _locTextController.text = prefs.get(Constants.PREF_LAST_LOC) ?? "";
+                            });
+                          },
+                          child: Text('RESET'),
+                        ),
+                        SizedBox(width: 15),
+                        ElevatedButton(
+                            onPressed: () async {
+                              // Validate returns true if the form is valid, or false
+                              // otherwise.
+                              if (_formKey.currentState.validate()) {
+                                SharedPreferences prefs = await SharedPreferences
+                                    .getInstance();
+                                prefs.setString(Constants.PREF_LAST_ORG, _orgTextController
+                                    .text);
+                                prefs.setString(Constants.PREF_LAST_LOC, _locTextController
+                                    .text);
+                                prefs.setBool(Constants.PREF_ACTIVE_SURVEY, true);
+                                _launchCamera();
+                              }
+                            },
+                            child: Text('Continue')
+                        ),
+                      ],
+                    )
+                ),
+              ],
+            )
+
+                )
+        ,
+        floatingActionButton: _hasMedia && _activeSurvey
+            ? FloatingActionButton(
+                onPressed: _launchCamera,
+                child: Icon(Icons.add),
+                backgroundColor: Colors.green,
+              )
+            : SizedBox()
     );
 
   }

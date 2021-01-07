@@ -1,4 +1,5 @@
-import 'package:blue_anura/views/camera/camerawesome.dart';
+import 'dart:io';
+import 'dart:typed_data';
 import 'package:blue_anura/views/survey/viewer_page.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/cupertino.dart';
@@ -6,6 +7,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:photo_gallery/photo_gallery.dart';
 import 'package:flutter/rendering.dart';
 import 'package:transparent_image/transparent_image.dart';
+import 'package:exif/exif.dart';
 
 class AlbumPage extends StatefulWidget {
   final Album album;
@@ -18,6 +20,8 @@ class AlbumPage extends StatefulWidget {
 
 class AlbumPageState extends State<AlbumPage> {
   List<Medium> _media;
+  bool _loading = true;
+
   Widget gallery = Center(child: Text("Not started"),);
   @override
   void initState() {
@@ -29,13 +33,18 @@ class AlbumPageState extends State<AlbumPage> {
     MediaPage mediaPage = await widget.album.listMedia();
     setState(() {
       _media = List.from(mediaPage.items.reversed);
+      _loading = false;
     });
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body:
+      body: _loading
+          ? Center(
+        child: CircularProgressIndicator(),
+      )
+          :
       LayoutBuilder(
         builder: (context, constraints) {
           double gridWidth = (constraints.maxWidth - 20) / 3;
@@ -44,7 +53,7 @@ class AlbumPageState extends State<AlbumPage> {
           return Container(
             padding: EdgeInsets.all(5),
             child: _media ==null || _media.isEmpty
-                ? Center(child: Text("Not started yet"))
+                ? SizedBox()
                 : GridView.count(
               childAspectRatio: ratio,
               crossAxisCount: 3,
@@ -82,7 +91,21 @@ class AlbumPageState extends State<AlbumPage> {
                               Container(
                                   alignment: Alignment.topLeft,
                                   padding: EdgeInsets.only(left: 2.0),
-                                  child: getTextDate(medium)
+                                  child: FutureBuilder<String>(
+                                    future: getImageInfo(medium, _media),
+                                    builder: (BuildContext context, AsyncSnapshot<String> result) {
+                                      if (result.data == null) return SizedBox();
+                                      return Text(result.data,
+                                          maxLines: 1,
+                                          textAlign: TextAlign.start,
+                                          style: TextStyle(
+                                            height: 1.2,
+                                            fontSize: 16,
+                                          )
+                                      );
+
+                                    },
+                                  )
                               ),
                             ]
                         ),
@@ -97,19 +120,29 @@ class AlbumPageState extends State<AlbumPage> {
   }
 }
 
-Widget getTextDate(Medium medium) {
-  DateTime date = medium.creationDate ??
-      medium.modifiedDate;
+Future<String> getImageInfo(Medium medium, List _media) async {
+  // User the index in the list to start off with...
+  String info = (_media.indexOf(medium)+1).toString().padLeft(3, '0') + " @ ";
+
+  try {
+    File _image = await medium.getFile();
+    Uint8List bytes = await _image.readAsBytes();
+    Map<String, IfdTag> tags = await readExifFromBytes(bytes);
+
+    // "EXIF UserComment" == abc_123_20210107_004.jpg|Cat|SubCat|Spec|Comment|0.0.3.6
+    // - Extract the filename
+    // - Then get the last value and remove the extension to get the sequence #
+    info = tags["EXIF UserComment"].toString().split("|")[0].split("_")[3]
+        .substring(0, 3) + " @ ";
+  } catch(e) {
+    print('----------\nerror reading EXIF: $e\n----------');
+  }
+
+  DateTime date = medium.creationDate ?? medium.modifiedDate;
   if (date != null) {
-    String d = date?.toLocal().toString()?.split(" ")[1].substring(0, 8);
-    return Text(d,
-        maxLines: 1,
-        textAlign: TextAlign.start,
-        style: TextStyle(
-          height: 1.2,
-          fontSize: 16,
-        )
-    );
-  } else return Text("unknown");
+    // Only want the time at this point...
+    info += date?.toLocal().toString()?.split(" ")[1].substring(0, 8);
+  }
+  return info;
 }
 

@@ -1,6 +1,6 @@
 import 'package:blue_anura/constants.dart';
 // import 'package:blue_anura/utils/first_camera.dart';
-import 'package:blue_anura/views/camera/camerawesome.dart';
+// import 'package:blue_anura/views/camera/camerawesome.dart';
 import 'package:blue_anura/views/survey/survey.dart';
 // import 'package:blue_anura/views/widgets/option_button.dart';
 import 'package:blue_anura/views/home/home.dart';
@@ -23,7 +23,6 @@ class _DashboardScreenState extends State<DashboardScreen> {
 
 const String _title = 'Blue Anura';
 
-/// This is the main application widget.
 class NavigatorApp extends StatelessWidget {
 
   @override
@@ -50,7 +49,7 @@ class _NavigatorStatefulWidgetState extends State<NavigatorStatefulWidget>with S
   @override
   void initState() {
     super.initState();
-    _tabController = TabController(length: 4, vsync: this);
+    _tabController = TabController(length: 3, vsync: this);
   }
   @override
   void dispose() {
@@ -75,12 +74,8 @@ class _NavigatorStatefulWidgetState extends State<NavigatorStatefulWidget>with S
               // child: Text("Home"),
             ),
             Tab(
-              icon: Icon(Icons.photo_camera),
-              // child: Text("Survey"),
-            ),
-            Tab(
               icon: Icon(Icons.photo_library_outlined ),
-              // child: Text("Gallery"),
+              // child: Text("Survey"),
             ),
             Tab(
               icon: Icon(Icons.location_pin),
@@ -98,7 +93,6 @@ class _NavigatorStatefulWidgetState extends State<NavigatorStatefulWidget>with S
         physics: NeverScrollableScrollPhysics(),
         children: [
           Home(),
-          Camera(),
           Survey(),
           SendLocation()
         ],

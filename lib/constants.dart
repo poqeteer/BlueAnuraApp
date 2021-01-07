@@ -15,4 +15,15 @@ class Constants {
       800:Color.fromRGBO(85, 122, 149, .9),
       900:Color.fromRGBO(85, 122, 149, 1),
     });
+
+  static const String BASE_ALBUM = "DCIM";
+  static const String ALBUM_NAME = "BlueAnura5";
+
+  static const String PREF_NAME = 'name';
+  static const String PREF_EMAIL = 'email';
+  static const String PREF_PHONE = 'phone';
+  static const String PREF_LAST_ORG = 'lastOrg';
+  static const String PREF_LAST_LOC = 'lastLoc';
+  static const String PREF_ACTIVE_SURVEY = 'activeSurvey';
+  static const String PREF_SEQUENCE = 'sequence';
 }
