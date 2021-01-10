@@ -29,6 +29,7 @@ dependencies:
   # mask_text_input_formatter: ^1.1.0
   flutter_masked_text: ^0.8.0
   form_validator: ">=0.1.7 <2.0.0"
+  dropdownfield: ^1.0.3
 
 #  rflutter_alert: ^1.1.0
   adaptive_dialog: ^0.9.3
@@ -58,6 +59,8 @@ dependencies:
   photo_gallery: ^0.3.0
   transparent_image: ^1.0.0
   exif: ^1.0.3
+  photo_manager: ^0.5.8
+  image_fade: ^0.2.1
 
 #  image_native_resizer: ^0.1.2
 
@@ -138,3 +141,6 @@ flutter:
           weight: 400
         - asset: assets/fonts/Grandstander-Italic.ttf
           style: italic
+    - family: AndaleMono
+      fonts:
+        - asset: assets/fonts/andale-mono.ttf

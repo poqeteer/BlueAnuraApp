@@ -148,6 +148,13 @@ packages:
       url: "https://pub.dartlang.org"
     source: hosted
     version: "0.3.3"
+  dropdownfield:
+    dependency: "direct main"
+    description:
+      name: dropdownfield
+      url: "https://pub.dartlang.org"
+    source: hosted
+    version: "1.0.3"
   exif:
     dependency: "direct main"
     description:
@@ -264,6 +271,13 @@ packages:
       url: "https://pub.dartlang.org"
     source: hosted
     version: "2.1.19"
+  image_fade:
+    dependency: "direct main"
+    description:
+      name: image_fade
+      url: "https://pub.dartlang.org"
+    source: hosted
+    version: "0.2.1"
   integration_test:
     dependency: "direct dev"
     description: flutter
@@ -458,6 +472,13 @@ packages:
       url: "https://pub.dartlang.org"
     source: hosted
     version: "0.3.0"
+  photo_manager:
+    dependency: "direct main"
+    description:
+      name: photo_manager
+      url: "https://pub.dartlang.org"
+    source: hosted
+    version: "0.5.8"
   platform:
     dependency: transitive
     description:

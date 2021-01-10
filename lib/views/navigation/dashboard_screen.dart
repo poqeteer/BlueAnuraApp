@@ -1,11 +1,8 @@
 import 'package:blue_anura/constants.dart';
-// import 'package:blue_anura/utils/first_camera.dart';
-// import 'package:blue_anura/views/camera/camerawesome.dart';
-import 'package:blue_anura/views/survey/survey.dart';
-// import 'package:blue_anura/views/widgets/option_button.dart';
+import 'package:blue_anura/views/survey/survey_gallery_page.dart';
 import 'package:blue_anura/views/home/home.dart';
 import 'package:flutter/material.dart';
-import 'package:blue_anura/views/send_location/send_location.dart';
+import 'package:blue_anura/views/send_location/send_location_page.dart';
 
 class DashboardScreen extends StatefulWidget {
   static const routeName = '/dashboard';
@@ -70,16 +67,16 @@ class _NavigatorStatefulWidgetState extends State<NavigatorStatefulWidget>with S
           labelColor: Colors.amber[800],
           tabs: [
             Tab(
-              icon: Icon(Icons.home),
-              // child: Text("Home"),
+              // icon: Icon(Icons.home),
+              child: Text("Home"),
             ),
             Tab(
-              icon: Icon(Icons.photo_library_outlined ),
-              // child: Text("Survey"),
+              // icon: Icon(Icons.photo_library_outlined ),
+              child: Text("Survey"),
             ),
             Tab(
-              icon: Icon(Icons.location_pin),
-              // child: Text("Send Location"),
+              // icon: Icon(Icons.location_pin),
+              child: Text("Location"),
             )
           ],
           controller: _tabController,

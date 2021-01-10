@@ -198,6 +198,7 @@ class _SendLocationState extends State<SendLocation> {
                       labelText: 'Email',
                     ),
                     controller: _emailTextController,
+                    textInputAction:  TextInputAction.next,
                     keyboardType: TextInputType.emailAddress,
                     validator: ValidationBuilder().email("Valid email required").build(),
                   ),

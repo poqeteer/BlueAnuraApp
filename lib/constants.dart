@@ -17,7 +17,7 @@ class Constants {
     });
 
   static const String BASE_ALBUM = "DCIM";
-  static const String ALBUM_NAME = "BlueAnura5";
+  static const String ALBUM_NAME = "BlueAnura";
 
   static const String PREF_NAME = 'name';
   static const String PREF_EMAIL = 'email';
@@ -26,4 +26,10 @@ class Constants {
   static const String PREF_LAST_LOC = 'lastLoc';
   static const String PREF_ACTIVE_SURVEY = 'activeSurvey';
   static const String PREF_SEQUENCE = 'sequence';
+
+  static const String CANCEL = 'Cancel';
+  static const String SAVED = 'Saved';
+
+  static const String EXIF_SURVEY = 'ImageDescription';
+  static const String EXIF_BA_TAG = 'UserComment';
 }

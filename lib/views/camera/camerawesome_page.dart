@@ -1,35 +1,17 @@
 import 'dart:async';
 import 'dart:io';
-import 'dart:typed_data';
 
-// import 'package:blue_anura/utils/app_info.dart';
-// import 'package:blue_anura/utils/get_location.dart';
-import 'package:blue_anura/views/camera/survey_card_page.dart';
-// import 'package:blue_anura/utils/storage_utils.dart';
-import 'package:blue_anura/views/widgets/base_nav_page.dart';
-import 'package:camerawesome/models/orientations.dart';
+import 'package:blue_anura/constants.dart';
+import 'package:blue_anura/views/camera/preview_page.dart';
 import 'package:blue_anura/views/camera/widgets/bottom_bar.dart';
-// import 'package:blue_anura/views/camera/widgets/preview_card.dart';
 import 'package:blue_anura/views/camera/widgets/top_bar.dart';
+import 'package:blue_anura/views/widgets/base_nav_page.dart';
+import 'package:camerawesome/camerawesome_plugin.dart';
+import 'package:camerawesome/models/orientations.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:intl/intl.dart';
-// import 'package:adaptive_dialog/adaptive_dialog.dart';
-// import 'package:flutter_exif_plugin/flutter_exif_plugin.dart';
-// import 'package:location/location.dart';
-
-// import 'package:image/image.dart' as imgUtils;
-// import 'package:gallery_saver/gallery_saver.dart';
-
 import 'package:path_provider/path_provider.dart';
-import 'package:camerawesome/camerawesome_plugin.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-
-import '../../constants.dart';
-// import 'package:flutter_exif_plugin/flutter_exif_plugin.dart';
-
-
-// import 'package:r_album/r_album.dart';
 
 class Camera extends StatefulWidget {
   // just for E2E test. if true we create our images names from datetime.
@@ -69,7 +51,6 @@ class _CameraState extends State<Camera> with TickerProviderStateMixin {
 
   String _orgId;
   String _locId;
-  int _sequence;
 
   @override
   void initState() {
@@ -103,7 +84,6 @@ class _CameraState extends State<Camera> with TickerProviderStateMixin {
     setState((){
       _orgId = prefs.get(Constants.PREF_LAST_ORG) ?? "";
       _locId = prefs.get(Constants.PREF_LAST_LOC) ?? "";
-      _sequence = prefs.getInt(Constants.PREF_SEQUENCE) ?? 1;
     });
   }
 
@@ -120,7 +100,7 @@ class _CameraState extends State<Camera> with TickerProviderStateMixin {
   @override
   Widget build(BuildContext context) {
     return BaseNavPage(
-        title: "Organization: ${_orgId} | Location: ${_locId}",
+        title: "For organization $_orgId @ $_locId",
         body: Scaffold(
         body: Stack(
           fit: StackFit.expand,
@@ -197,12 +177,10 @@ class _CameraState extends State<Camera> with TickerProviderStateMixin {
 
   _takePhoto() async {
     final Directory extDir = await getTemporaryDirectory();
-    final testDir =
-      await Directory('${extDir.path}/test').create(recursive: true);
     final String fileName = widget.randomPhotoName
-        ? '${_orgId}_${_locId}_${DateFormat('yyyyMMdd').format(DateTime.now())}_${_sequence.toString().padLeft(3, '0')}.jpg'
+        ? '${DateTime.now().millisecondsSinceEpoch}.jpg'
         : 'photo_test.jpg';
-    final String filePath ='${testDir.path}/$fileName';
+    final String filePath ='${extDir.path}/$fileName';
 
     // final String path = await ExtStorage.getExternalStoragePublicDirectory(ExtStorage.DIRECTORY_PICTURES);
     // final String filePath = '$path/photo_test.jpg';
@@ -228,28 +206,14 @@ class _CameraState extends State<Camera> with TickerProviderStateMixin {
     // print("==> img.width : ${img.width} | img.height : ${img.height}");
     print("----------------------------------");
 
-    final result = await Navigator.of(context).push(MaterialPageRoute(
-        builder: (context) => SurveyCardPage(filePath)));
+    final String result = await Navigator.of(context).push(MaterialPageRoute(
+        builder: (context) => PreviewPage(filePath)));
 
-    if (result == 'Saved') {
+    if (result != null && result.contains(Constants.SAVED)) {
       Navigator.pop(context, result);
+    } else {
+      File(filePath).deleteSync();
     }
-
-    // StorageUtils.createFolder("DCIM/BlueAnura").then((path) {
-    //   _image.copy('$path/$fileName').then((value) {
-    //     print("----------------------------------");
-    //         print("IMAGE MOVED: Success");
-    //     print("==> from: $filePath to $value");
-    //     print("----------------------------------");
-    //     _image.delete();
-    //   }).catchError((error) {
-    //     showOkAlertDialog(title: "Copy Error", message: error.toString(), context: context);
-    //   });
-    // }).catchError((error){
-    //   print("----------------------------------");
-    //   print("IMAGE MOVED: Failed ${error.toString()}");
-    //   print("----------------------------------");
-    // });
   }
 
   _buildChangeResolutionDialog() {
