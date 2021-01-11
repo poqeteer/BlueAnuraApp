@@ -2,13 +2,13 @@ import 'package:blue_anura/constants.dart';
 import 'package:blue_anura/utils/app_info.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_login/flutter_login.dart';
-import 'package:blue_anura/views/navigation/dashboard_screen.dart';
+import 'package:blue_anura/views/navigation/dashboard_page.dart';
 
 const users = const {
   'a@b.c': '123',
 };
 
-class LoginScreen extends StatelessWidget {
+class LoginPage extends StatelessWidget {
   Duration get loginTime => Duration(milliseconds: 2250);
 
   Future<String> _authUser(LoginData data) {
@@ -48,7 +48,7 @@ class LoginScreen extends StatelessWidget {
           onSignup: _authUser,
           onSubmitAnimationCompleted: () {
             Navigator.of(context).pushReplacement(MaterialPageRoute(
-              builder: (context) => DashboardScreen(),
+              builder: (context) => DashboardPage(),
             ));
           },
           onRecoverPassword: _recoverPassword,

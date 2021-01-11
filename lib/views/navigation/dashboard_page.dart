@@ -4,14 +4,14 @@ import 'package:blue_anura/views/home/home.dart';
 import 'package:flutter/material.dart';
 import 'package:blue_anura/views/send_location/send_location_page.dart';
 
-class DashboardScreen extends StatefulWidget {
+class DashboardPage extends StatefulWidget {
   static const routeName = '/dashboard';
 
   @override
-  _DashboardScreenState createState() => _DashboardScreenState();
+  _DashboardPageState createState() => _DashboardPageState();
 }
 
-class _DashboardScreenState extends State<DashboardScreen> {
+class _DashboardPageState extends State<DashboardPage> {
   @override
   Widget build(BuildContext context) {
     return NavigatorApp();

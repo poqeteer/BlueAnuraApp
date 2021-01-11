@@ -1,10 +1,14 @@
 import 'dart:async';
+import 'dart:convert';
 import 'dart:io';
 
 import 'package:blue_anura/constants.dart';
+import 'package:blue_anura/models/organization_model.dart';
 import 'package:blue_anura/utils/storage_utils.dart';
 import 'package:blue_anura/views/camera/camerawesome_page.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+// import 'package:flutter_masked_text/flutter_masked_text.dart';
 import 'package:form_validator/form_validator.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:photo_gallery/photo_gallery.dart';
@@ -22,8 +26,9 @@ class Survey extends StatefulWidget {
 class _SurveyState extends State<Survey> {
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
 
-  TextEditingController _orgTextController = new TextEditingController();
+  // TextEditingController _orgTextController = new TextEditingController();
   TextEditingController _locTextController = new TextEditingController();
+  // MaskedTextController _locTextController = new MaskedTextController(mask: '000', text: '');
   final focusLocation = FocusNode();
 
   Album _album;
@@ -31,6 +36,13 @@ class _SurveyState extends State<Survey> {
   bool _activeSurvey = false;
   bool _hasMedia = false;
   int _mediaCount = 0;
+
+  List<OrganizationModel> _organizations = [
+     OrganizationModel(code: 'BeW', name: 'Beach Watch'),
+     OrganizationModel(code: 'WWF', name: 'World Wildlife Fund'),
+     OrganizationModel(code: 'EDF', name: 'Environmental Defense Fund'),
+  ];
+  OrganizationModel _organization;
 
   @override
   void initState() {
@@ -76,6 +88,12 @@ class _SurveyState extends State<Survey> {
 
       // if (!mounted) return;
 
+      String pref = prefs.get(Constants.PREF_LAST_ORG) ?? "";
+      if (!pref.contains("\{")) pref = _organizations[0].toJsonString();
+
+      final orgPref = json.decode(pref);
+      final index = _organizations.indexWhere((element) => element.code == orgPref["code"]);
+
       setState(() {
         _loading = false;
         _album = blueAnuraAlbum;
@@ -85,7 +103,8 @@ class _SurveyState extends State<Survey> {
         if (!_activeSurvey) print("----------\nSurvey NOT started\n----------");
         else print("----------\nSurvey started\n----------");
 
-        _orgTextController.text = prefs.get(Constants.PREF_LAST_ORG) ?? "";
+        _organization = _organizations[index];
+
         _locTextController.text = prefs.get(Constants.PREF_LAST_LOC) ?? "";
       });
     }
@@ -154,7 +173,7 @@ class _SurveyState extends State<Survey> {
               preferredSize: Size.fromHeight(_hasMedia && _activeSurvey && !_loading ? 50.0 : 0.0),
               child: AppBar(title: Row(
                 children: [
-                  Text('Org: ${_orgTextController.text} | Loc: ${_locTextController.text}'),
+                  Text('Org: ${_organization?.code} | Loc: ${_locTextController.text}'),
                   Spacer(flex: 1),
                   DropdownButton(
                     icon: Icon(Icons.menu),
@@ -235,20 +254,53 @@ class _SurveyState extends State<Survey> {
                       Padding(
                         padding: const EdgeInsets.symmetric(vertical: 16.0),
                         child: Text(
-                            'To start the survey the following information is required:\n\nObviously a dummy form for now...\n\nProbably some sort of list of organizations and a curated list of locations?\n\nFull page is overkill. Probably should just be a dialog.'
+                            'To start the survey the following information is required:\n\n'
+                                'Select the organization you are doing the survey for followed by the location identification number for the you are doing the survey.\n\n'
+                                'When you have entered the information, tap the Continue button to take your first photo.'
                         ),
                       ),
-                      TextFormField(
-                        autofocus: true,
-                        decoration: const InputDecoration(
-                          icon: const Icon(Icons.business),
-                          hintText: 'Enter Organization Identifier',
-                          labelText: 'Organization',
-                        ),
-                        controller: _orgTextController,
-                        textInputAction:  TextInputAction.next,
-                        onFieldSubmitted: (_) => FocusScope.of(context).requestFocus(focusLocation),
-                        validator: ValidationBuilder().minLength(1, "Organization ID is required").build(),
+                      // TextFormField(
+                      //   autofocus: true,
+                      //   decoration: const InputDecoration(
+                      //     icon: const Icon(Icons.business),
+                      //     hintText: 'Enter Organization Identifier',
+                      //     labelText: 'Organization',
+                      //   ),
+                      //   controller: _orgTextController,
+                      //   textInputAction:  TextInputAction.next,
+                      //   onFieldSubmitted: (_) => FocusScope.of(context).requestFocus(focusLocation),
+                      //   validator: ValidationBuilder().minLength(1, "Organization ID is required").build(),
+                      // ),
+                      FormField<OrganizationModel>(
+                        builder: (FormFieldState<OrganizationModel> state) {
+                          return InputDecorator(
+                            decoration: InputDecoration(
+                              icon: const Icon(Icons.category_outlined),
+                              labelText: 'Organization',
+                              errorText: state.hasError ? state.errorText : null,
+                            ),
+                            isEmpty: _organization == null,
+                            child: new DropdownButtonHideUnderline(
+                              child: new DropdownButton<OrganizationModel>(
+                                value: _organization,
+                                isDense: true,
+                                onChanged: (OrganizationModel newValue) {
+                                  setState(() {
+                                    _organization = newValue;
+                                  });
+                                  state.didChange(newValue);
+                                  FocusScope.of(context).requestFocus(focusLocation);
+                                },
+                                items: _organizations.map((OrganizationModel value) {
+                                  return new DropdownMenuItem<OrganizationModel>(
+                                    value: value,
+                                    child: new Text(value.name),
+                                  );
+                                }).toList(),
+                              ),
+                            ),
+                          );
+                        },
                       ),
                       TextFormField(
                         focusNode: focusLocation,
@@ -258,8 +310,13 @@ class _SurveyState extends State<Survey> {
                           labelText: 'Location',
                         ),
                         controller: _locTextController,
+                        keyboardType: TextInputType.number,
                         textInputAction:  TextInputAction.next,
+                        inputFormatters: [
+                          FilteringTextInputFormatter.digitsOnly,
+                        ],
                         validator: ValidationBuilder().minLength(1, "Location ID is required").build(),
+                        maxLength: 3,
                       ),
                       Padding(
                           padding: const EdgeInsets.symmetric(vertical: 20.0),
@@ -270,7 +327,7 @@ class _SurveyState extends State<Survey> {
                                 onPressed: () async {
                                   SharedPreferences prefs = await SharedPreferences.getInstance();
                                   setState(() {
-                                    _orgTextController.text = prefs.get(Constants.PREF_LAST_ORG) ?? "";
+                                    _organization = prefs.get(Constants.PREF_LAST_ORG) ?? _organizations;
                                     _locTextController.text = prefs.get(Constants.PREF_LAST_LOC) ?? "";
                                   });
                                 },
@@ -284,8 +341,7 @@ class _SurveyState extends State<Survey> {
                                     if (_formKey.currentState.validate()) {
                                       SharedPreferences prefs = await SharedPreferences
                                           .getInstance();
-                                      prefs.setString(Constants.PREF_LAST_ORG, _orgTextController
-                                          .text);
+                                      prefs.setString(Constants.PREF_LAST_ORG, _organization.toJsonString());
                                       prefs.setString(Constants.PREF_LAST_LOC, _locTextController
                                           .text);
                                       prefs.setBool(Constants.PREF_ACTIVE_SURVEY, true);

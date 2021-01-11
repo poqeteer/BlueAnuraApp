@@ -3,7 +3,7 @@
 import 'package:blue_anura/constants.dart';
 import 'package:blue_anura/utils/app_info.dart';
 import 'package:flutter/material.dart';
-import 'package:blue_anura/views/auth/login_screen.dart';
+import 'package:blue_anura/views/auth/login_page.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 Future<void> main() async {
@@ -74,7 +74,7 @@ class MyApp extends StatelessWidget {
         //   overline: TextStyle(fontFamily: 'NotoSans'),
         // ),
       ),
-      home: LoginScreen(),
+      home: LoginPage(),
     );
   }
 }

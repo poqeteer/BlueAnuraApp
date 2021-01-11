@@ -67,7 +67,7 @@ class _PreviewPageState extends State<PreviewPage> {
                 Navigator.pop(context, result);
               }
             },
-            child: Icon(Icons.edit),
+            child: Icon(Icons.check),
             backgroundColor: Colors.green,
           ),
         ]
