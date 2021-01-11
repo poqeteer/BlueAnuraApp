@@ -5,6 +5,7 @@ import 'package:blue_anura/views/survey/survey_form_page.dart';
 import 'package:blue_anura/views/widgets/base_nav_page.dart';
 import 'package:blue_anura/views/widgets/image_viewer.dart';
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class PreviewPage extends StatefulWidget {
   final String filePath;
@@ -16,7 +17,7 @@ class PreviewPage extends StatefulWidget {
 }
 
 class _PreviewPageState extends State<PreviewPage> {
-  DateTime date;
+  String _title = '';
 
   @override
   void initState() {
@@ -25,10 +26,13 @@ class _PreviewPageState extends State<PreviewPage> {
   }
 
   Future<void> _initState () async {
-
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    int sequence = prefs.getInt(Constants.PREF_SEQUENCE);
     FileStat fs = await FileStat.stat(widget.filePath);
+    DateTime date = fs.modified;
+    String _sequence = sequence.toString().padLeft(3, '0') ?? '001';
     setState(() {
-      date = fs.modified;
+      _title = 'Preview #$_sequence @ ${date?.toLocal().toString()?.split(" ")[1].substring(0, 5)}';
     });
   }
 
@@ -39,7 +43,7 @@ class _PreviewPageState extends State<PreviewPage> {
 
     return Scaffold(
         body: BaseNavPage(
-          title: date?.toLocal().toString(),
+          title: _title,
           body: Container(
             alignment: Alignment.center,
             child: ImageViewer(imageProvider: FileImage(_image)),
@@ -58,7 +62,7 @@ class _PreviewPageState extends State<PreviewPage> {
             heroTag: "fabSurveyInfo",
             onPressed: () async {
               String result = await Navigator.of(context).push(MaterialPageRoute(
-                  builder: (context) => SurveyFormPage(date?.toLocal().toString(), _image, null)));
+                  builder: (context) => SurveyFormPage(_title, _image, null)));
               if (result != Constants.CANCEL) {
                 Navigator.pop(context, result);
               }

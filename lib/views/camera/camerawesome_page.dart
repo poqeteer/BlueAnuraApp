@@ -100,7 +100,7 @@ class _CameraState extends State<Camera> with TickerProviderStateMixin {
   @override
   Widget build(BuildContext context) {
     return BaseNavPage(
-        title: "For organization $_orgId @ $_locId",
+        title: "For location $_locId",
         body: Scaffold(
         body: Stack(
           fit: StackFit.expand,

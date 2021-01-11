@@ -4,6 +4,7 @@ import 'package:blue_anura/constants.dart';
 import 'package:blue_anura/utils/app_info.dart';
 import 'package:flutter/material.dart';
 import 'package:blue_anura/views/auth/login_screen.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 Future<void> main() async {
   // Ensure that plugin services are initialized so that `availableCameras()`
@@ -24,6 +25,11 @@ Future<void> main() async {
   // } else {
   //   FirstCamera().camera = cameras.first;
   // }
+
+  // Really only needed for initial run. This should be set on upload
+  SharedPreferences prefs = await SharedPreferences.getInstance();
+  if (prefs.getInt(Constants.PREF_SEQUENCE) == null)
+    prefs.setInt(Constants.PREF_SEQUENCE, 1);
 
   await AppInfo().readInfo();
 

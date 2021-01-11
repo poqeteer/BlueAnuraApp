@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:io';
 
 import 'package:blue_anura/constants.dart';
+import 'package:blue_anura/utils/storage_utils.dart';
 import 'package:blue_anura/views/camera/camerawesome_page.dart';
 import 'package:flutter/material.dart';
 import 'package:form_validator/form_validator.dart';
@@ -29,6 +30,7 @@ class _SurveyState extends State<Survey> {
   bool _loading = false;
   bool _activeSurvey = false;
   bool _hasMedia = false;
+  int _mediaCount = 0;
 
   @override
   void initState() {
@@ -52,28 +54,36 @@ class _SurveyState extends State<Survey> {
       List<Album> albums = await PhotoGallery.listAlbums(mediumType: MediumType.image);
 
       Album blueAnuraAlbum;
+      bool hasMedia = false;
+      int mediaCount = 0;
       for(Album album in albums) {
         if (album.name == Constants.ALBUM_NAME) {
           blueAnuraAlbum = album;
           await album.listMedia()?.then(
-                  (MediaPage media) =>
-                    _hasMedia = media.items.isNotEmpty
+                  (MediaPage media) {
+                    hasMedia = media.items.isNotEmpty;
+                    mediaCount = media.items.length;
+                  }
           );  // Should just pass the media list along to Album?
               // Problem is who does the refresh?
           break;
         }
       }
-      if (blueAnuraAlbum == null) print("----------\nalbum ${Constants.ALBUM_NAME} not found\n----------");
-      if (!_hasMedia) print("----------\nalbum ${Constants.ALBUM_NAME} has NO media\n----------");
-      else  print("----------\nalbum ${Constants.ALBUM_NAME} HAS media\n----------");
+      if (blueAnuraAlbum == null) print("----------\nalbum ${Constants.ALBUM_NAME} NOT found\n----------");
+      else  print("----------\nalbum ${Constants.ALBUM_NAME} found\n----------");
+      if (!hasMedia) print("----------\nalbum ${Constants.ALBUM_NAME} has NO media\n----------");
+      else print("----------\nalbum ${Constants.ALBUM_NAME} HAS media\n----------");
 
       // if (!mounted) return;
 
       setState(() {
-        _album = blueAnuraAlbum;
         _loading = false;
+        _album = blueAnuraAlbum;
+        _hasMedia = hasMedia;
+        _mediaCount = mediaCount;
         _activeSurvey = prefs.getBool(Constants.PREF_ACTIVE_SURVEY) ?? false;
-        if (!_activeSurvey) print("----------\nSurvey NOT started\n----------"); else  print("----------\nSurvey started\n----------");
+        if (!_activeSurvey) print("----------\nSurvey NOT started\n----------");
+        else print("----------\nSurvey started\n----------");
 
         _orgTextController.text = prefs.get(Constants.PREF_LAST_ORG) ?? "";
         _locTextController.text = prefs.get(Constants.PREF_LAST_LOC) ?? "";
@@ -91,28 +101,60 @@ class _SurveyState extends State<Survey> {
     return false;
   }
 
-  @override
-  Widget build(BuildContext context) {
-    Future<void> _launchCamera() async {
-      final result = await Navigator.of(context).push(MaterialPageRoute(
-          builder: (context) => Camera()));
-      if (result != null) {
+  void _launchCamera() {
+    Navigator.of(context).push(MaterialPageRoute(
+        builder: (context) => Camera())).then((result) async {
+      if (result != null && result.contains(Constants.SAVED)) {
+        print('-----------\n_launchCamera result: $result\n-----------');
         // ScaffoldMessenger.of(context)
         //   ..removeCurrentSnackBar()
         //   ..showSnackBar(SnackBar(content: Text("$result")));
+
+        Directory dir = await StorageUtils.buildFolderPath('${Constants.BASE_ALBUM}/${Constants.ALBUM_NAME}');
+        List<FileSystemEntity> list = await StorageUtils.dirContents(dir);
+
+        // Refresh gallery/album...
         setState(() {
           _loading = true;
         });
-      }
-      await initAsync();
-    }
+        await initAsync();
 
+        // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+        // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!! KLUDGE !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+        // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+        // Have to wait for the album to be loaded by the system if this the
+        // 1st time or after an upload. This could take a second or 2, so loop
+        // until it is found... And for some reason on may S9 it doesn't always
+        // get all the images even though they are there so counts should match
+        // ...
+        // Hmmm... Now that I do the lookup of the directory, this doesn't seem
+        // to be necessary... I'll leave it anyway.
+        int count = 0;
+        while(((!_hasMedia && _album == null) || _mediaCount < list.length) && count < 5) {
+          print('-----------\nrefresh #: $count\n-----------');
+          setState(() {
+            _loading = true;
+          });
+          await initAsync();
+          if (!_hasMedia && _album == null)
+            sleep(Duration(seconds: 1));
+          count++;
+        }
+        if (count == 5) {
+          AlertDialog(title: Text('System error'), content: Text('Please exit application and reload!'));
+        }
+      }
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
     return Scaffold(
         appBar: PreferredSize(
               preferredSize: Size.fromHeight(_hasMedia && _activeSurvey && !_loading ? 50.0 : 0.0),
               child: AppBar(title: Row(
                 children: [
-                  Text('Organization: ${_orgTextController.text} | Location: ${_locTextController.text}'),
+                  Text('Org: ${_orgTextController.text} | Loc: ${_locTextController.text}'),
                   Spacer(flex: 1),
                   DropdownButton(
                     icon: Icon(Icons.menu),

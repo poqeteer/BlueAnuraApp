@@ -45,12 +45,12 @@ class _AlbumThumbnailState extends State<AlbumThumbnail> {
     if (exifDataModel != null) {
       // Extract the filename then get the last value and remove the extension to
       // get the sequence #
-      info = "${exifDataModel.sequence} @ ";
+      info = "#${exifDataModel.sequence} @ ";
 
       DateTime date = widget.medium.creationDate ?? widget.medium.modifiedDate;
       if (date != null) {
         // Only want the time at this point...
-        info += date?.toLocal().toString()?.split(" ")[1].substring(0, 8);
+        info += date?.toLocal().toString()?.split(" ")[1].substring(0, 5);
       }
 
       // info += '\nCat: ${TextUtils.ellipsis(exifDataModel.category, 8)}\n'

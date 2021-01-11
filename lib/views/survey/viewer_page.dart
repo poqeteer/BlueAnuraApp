@@ -18,7 +18,7 @@ class ViewerPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     DateTime date = medium.creationDate ?? medium.modifiedDate;
-    String title = '${exifDataModel.sequence} @ ${date?.toLocal().toString()?.split(" ")[1].substring(0, 8)}';
+    String title = '#${exifDataModel.sequence} @ ${date?.toLocal().toString()?.split(" ")[1].substring(0, 5)}';
 
     return Scaffold(
         body: BaseNavPage(
@@ -48,7 +48,7 @@ class ViewerPage extends StatelessWidget {
             File file = await medium.getFile();
             String result = await Navigator.of(context).push(MaterialPageRoute(
                 builder: (context) => SurveyFormPage(title, file, exifDataModel)));
-            if (result != Constants.CANCEL) {
+            if (result != null && result != Constants.CANCEL) {
               Navigator.pop(context, result);
             }
           },

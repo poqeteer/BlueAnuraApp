@@ -208,6 +208,7 @@ class _SurveyFormPageState extends State<SurveyFormPage> {
                 controller: _commentTextController,
                 keyboardType: TextInputType.multiline,
                 maxLines: 3,
+                maxLength: 160,
               ),
               Padding(
                   padding: const EdgeInsets.symmetric(vertical: 20.0),
