@@ -49,7 +49,7 @@ class _CameraState extends State<Camera> with TickerProviderStateMixin {
   // StreamSubscription<Uint8List> previewStreamSub;
   // Stream<Uint8List> previewStream;
 
-  String _orgId;
+  // String _orgId;
   String _locId;
 
   @override
@@ -82,7 +82,7 @@ class _CameraState extends State<Camera> with TickerProviderStateMixin {
     if (!mounted) return;
 
     setState((){
-      _orgId = prefs.get(Constants.PREF_LAST_ORG) ?? "";
+      // _orgId = prefs.get(Constants.PREF_LAST_ORG) ?? "";
       _locId = prefs.get(Constants.PREF_LAST_LOC) ?? "";
     });
   }
@@ -99,6 +99,7 @@ class _CameraState extends State<Camera> with TickerProviderStateMixin {
 
   @override
   Widget build(BuildContext context) {
+    FocusScope.of(context).unfocus();
     return BaseNavPage(
         title: "For location $_locId",
         body: Scaffold(

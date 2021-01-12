@@ -29,7 +29,7 @@ dependencies:
   # mask_text_input_formatter: ^1.1.0
   flutter_masked_text: ^0.8.0
   form_validator: ">=0.1.7 <2.0.0"
-  dropdownfield: ^1.0.3
+#  dropdownfield: ^1.0.3
 
 #  rflutter_alert: ^1.1.0
   adaptive_dialog: ^0.9.3

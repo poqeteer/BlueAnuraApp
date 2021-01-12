@@ -9,10 +9,10 @@ class ImageViewer extends StatefulWidget {
   }) : super(key: key);
 
   @override
-  _ImageViewerState createState() => _ImageViewerState();
+  ImageViewerState createState() => ImageViewerState();
 }
 
-class _ImageViewerState extends State<ImageViewer> {
+class ImageViewerState extends State<ImageViewer> {
   @override
   void initState() {
     super.initState();

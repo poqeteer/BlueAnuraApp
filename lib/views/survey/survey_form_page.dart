@@ -6,7 +6,6 @@ import 'package:blue_anura/models/exif_data_model.dart';
 import 'package:blue_anura/utils/app_info.dart';
 import 'package:blue_anura/utils/get_location.dart';
 import 'package:blue_anura/views/widgets/base_nav_page.dart';
-// import 'package:dropdownfield/dropdownfield.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_exif_plugin/flutter_exif_plugin.dart';
@@ -33,20 +32,20 @@ class _SurveyFormPageState extends State<SurveyFormPage> {
   TextEditingController _specimenTextController = new TextEditingController();
   TextEditingController _commentTextController = new TextEditingController();
 
-  final focusSub = FocusNode();
-  final focusSpc = FocusNode();
-  final focusCom = FocusNode();
+  final _focusSub = FocusNode();
+  final _focusSpc = FocusNode();
+  final _focusCom = FocusNode();
 
-  TextInputType phoneKeyboardType = TextInputType.phone;
-  Widget phoneButton = SizedBox();
   bool _showFloatingButton = false;
 
   List<String> _categories = <String>[
     'Panorama',
     'Specimen',
+    'Paper',
     'San Francisco',
     'Honolulu',
     'Tokyo',
+    'London',
   ];
   String _category = 'Panorama';
 
@@ -55,31 +54,42 @@ class _SurveyFormPageState extends State<SurveyFormPage> {
     super.initState();
     _initState();
     if ( Platform.operatingSystem == 'ios')
-      focusSpc.addListener(_handleFocusChange);
+      _focusSpc.addListener(_handleFocusChange);
   }
   Future<void> _initState() async {
     if (!mounted) return;
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+
     setState(() {
-      _category = widget.exifDataModel?.category ?? "Panorama";
-      _subcategoryTextController.text = widget.exifDataModel?.subcategory ?? "";
-      _specimenTextController.text = widget.exifDataModel?.specimen ?? "";
-      _commentTextController.text = widget.exifDataModel?.comment ?? "";
+      if (widget.exifDataModel != null) {
+        _category = widget.exifDataModel?.category;
+        _subcategoryTextController.text =
+            widget.exifDataModel?.subcategory ?? "";
+        _specimenTextController.text = widget.exifDataModel?.specimen ?? "";
+        _commentTextController.text = widget.exifDataModel?.comment ?? "";
+      } else {
+        _category = prefs.getString(Constants.PREF_LAST_CATEGORY) ?? _categories[0];
+        _subcategoryTextController.text =
+            prefs.getString(Constants.PREF_LAST_SUBCATEGORY) ?? "";
+        _specimenTextController.text = prefs.getString(Constants.PREF_LAST_SPECIMEN) ?? "";
+        _commentTextController.text = "";
+      }
     });
   }
 
   @override
   void dispose() {
     if ( Platform.operatingSystem == 'ios')
-      focusSpc.removeListener(_handleFocusChange);
-    focusCom.dispose();
-    focusSpc.dispose();
-    focusSub.dispose();
+      _focusSpc.removeListener(_handleFocusChange);
+    _focusCom.dispose();
+    _focusSpc.dispose();
+    _focusSub.dispose();
     super.dispose();
   }
 
   void _handleFocusChange() {
     if ( Platform.operatingSystem == 'ios')
-      if (focusSpc.hasFocus) {
+      if (_focusSpc.hasFocus) {
         setState(() {_showFloatingButton = true;});
       } else {
         setState(() {_showFloatingButton = false;});
@@ -128,11 +138,15 @@ class _SurveyFormPageState extends State<SurveyFormPage> {
                         value: _category,
                         isDense: true,
                         onChanged: (String newValue) {
-                          setState(() {
-                            _category = newValue;
-                          });
-                          state.didChange(newValue);
-                          FocusScope.of(context).requestFocus(focusSub);
+                          if (newValue != _category) {
+                            setState(() {
+                              _category = newValue;
+                              _subcategoryTextController.text = "";
+                              _specimenTextController.text = "";
+                            });
+                            state.didChange(newValue);
+                          }
+                          FocusScope.of(context).requestFocus(_focusSub);
                         },
                         items: _categories.map((String value) {
                           return new DropdownMenuItem<String>(
@@ -144,49 +158,22 @@ class _SurveyFormPageState extends State<SurveyFormPage> {
                     ),
                   );
                 },
-                validator: (val) {
-                  return val != '' ? null : 'Please select a category';
-                },
+                // validator: (val) {
+                //   return val != '' ? null : 'Please select a category';
+                // },
               ),
-              // DropDownField(
-              //     onValueChanged: (dynamic newValue) {
-              //       formData['Category'] = newValue;
-              //       FocusScope.of(context).requestFocus(focusSub);
-              //     },
-              //     value: formData['Category'],
-              //     icon: Icon(Icons.category_outlined),
-              //     required: true,
-              //     hintText: 'Choose a category',
-              //     labelText: 'Category',
-              //     items: categories,
-              //     strict: true,
-              //     setter: (dynamic newValue) {
-              //     }),
-              // Divider(
-              //     height: 10.0,
-              //     color: Theme.of(context).primaryColor),
-              // TextFormField(
-              //   autofocus: true,
-              //   decoration: InputDecoration(
-              //     labelText: 'Category',
-              //     icon: Icon(Icons.category_outlined),
-              //   ),
-              //   controller: _categoryTextController,
-              //   textInputAction:  TextInputAction.next,
-              //   onFieldSubmitted: (_) => FocusScope.of(context).requestFocus(focusSub),
-              // ),
               TextFormField(
-                focusNode: focusSub,
+                focusNode: _focusSub,
                 decoration: InputDecoration(
                   labelText: 'Subcategory',
                   icon: Icon(Icons.workspaces_outline ),
                 ),
                 controller: _subcategoryTextController,
                 textInputAction:  TextInputAction.next,
-                onFieldSubmitted: (_) => FocusScope.of(context).requestFocus(focusSpc),
+                onFieldSubmitted: (_) => FocusScope.of(context).requestFocus(_focusSpc),
               ),
               TextFormField(
-                focusNode: focusSpc,
+                focusNode: _focusSpc,
                 decoration: InputDecoration(
                   labelText: 'Specimen',
                   icon: Icon(Icons.bug_report_outlined ),
@@ -197,10 +184,10 @@ class _SurveyFormPageState extends State<SurveyFormPage> {
                   FilteringTextInputFormatter.digitsOnly,
                 ],
                 textInputAction:  TextInputAction.next,
-                onFieldSubmitted: (_) => FocusScope.of(context).requestFocus(focusCom),
+                onFieldSubmitted: (_) => FocusScope.of(context).requestFocus(_focusCom),
               ),
               TextFormField(
-                focusNode: focusCom,
+                focusNode: _focusCom,
                 decoration: InputDecoration(
                   labelText: 'Comment',
                   icon: Icon(Icons.comment ),
@@ -233,6 +220,10 @@ class _SurveyFormPageState extends State<SurveyFormPage> {
                               String formattedSequence;
                               final int sequence = (prefs.getInt(
                                   Constants.PREF_SEQUENCE) ?? 1);
+
+                              prefs.setString(Constants.PREF_LAST_CATEGORY, _category);
+                              prefs.setString(Constants.PREF_LAST_SUBCATEGORY, _subcategoryTextController.text);
+                              prefs.setString(Constants.PREF_LAST_SPECIMEN, _specimenTextController.text);
 
                               // Stopwatch stopwatch = new Stopwatch()..start();
 
@@ -323,7 +314,7 @@ class _SurveyFormPageState extends State<SurveyFormPage> {
         visible: _showFloatingButton,
         child: FloatingActionButton.extended(
           onPressed: () {
-            FocusScope.of(context).requestFocus(focusCom);
+            FocusScope.of(context).requestFocus(_focusCom);
           },
           label: Text('   Next   '),
           icon: Icon(Icons.navigate_next),

@@ -26,6 +26,9 @@ class Constants {
   static const String PREF_LAST_LOC = 'lastLoc';
   static const String PREF_ACTIVE_SURVEY = 'activeSurvey';
   static const String PREF_SEQUENCE = 'sequence';
+  static const String PREF_LAST_CATEGORY = 'lastCategory';
+  static const String PREF_LAST_SUBCATEGORY = 'lastSubcategory';
+  static const String PREF_LAST_SPECIMEN = 'lastSpecimen';
 
   static const String CANCEL = 'Cancel';
   static const String SAVED = 'Saved';

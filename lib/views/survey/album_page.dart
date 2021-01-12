@@ -1,4 +1,4 @@
-import 'package:blue_anura/views/survey/album_thumbnail.dart';
+import 'package:blue_anura/views/survey/widgets/album_thumbnail.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/cupertino.dart';
 

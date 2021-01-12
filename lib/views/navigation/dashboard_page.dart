@@ -90,7 +90,7 @@ class _NavigatorStatefulWidgetState extends State<NavigatorStatefulWidget>with S
         physics: NeverScrollableScrollPhysics(),
         children: [
           Home(),
-          Survey(),
+          Survey(tabController: _tabController),
           SendLocation()
         ],
         controller: _tabController,

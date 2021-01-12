@@ -25,10 +25,10 @@ class AlbumThumbnail extends StatefulWidget {
 
 class _AlbumThumbnailState extends State<AlbumThumbnail> {
   EXIFDataModel exifDataModel;
-  String title = "";
-  String category = "";
-  String subcategory = "";
-  String specimen = "";
+  String _title = "";
+  String _category = "";
+  String _subcategory = "";
+  String _specimen = "";
 
   @override
   void initState() {
@@ -61,10 +61,10 @@ class _AlbumThumbnailState extends State<AlbumThumbnail> {
     }
 
     setState(() {
-      title = info;
-      category = exifDataModel?.category ?? "";
-      subcategory = exifDataModel?.subcategory ?? "";
-      specimen = exifDataModel?.specimen ?? "";
+      _title = info;
+      _category = exifDataModel?.category ?? "";
+      _subcategory = exifDataModel?.subcategory ?? "";
+      _specimen = exifDataModel?.specimen ?? "";
     });
   }
 
@@ -111,10 +111,10 @@ class _AlbumThumbnailState extends State<AlbumThumbnail> {
                   mainAxisSize: MainAxisSize.min,
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    LabeledText("", title, 16.0, widget.gridWidth - 4),
-                    LabeledText("Cat", category, 14.0, widget.gridWidth - 35),
-                    LabeledText("SbC", subcategory, 14.0, widget.gridWidth - 35),
-                    LabeledText("Spc", specimen, 14.0, widget.gridWidth - 35),
+                    LabeledText("", _title, 16.0, widget.gridWidth - 4),
+                    LabeledText("Cat", _category, 14.0, widget.gridWidth - 35),
+                    LabeledText("SbC", _subcategory, 14.0, widget.gridWidth - 35),
+                    LabeledText("Spc", _specimen, 14.0, widget.gridWidth - 35),
                   ],
               )
             ),

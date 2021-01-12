@@ -163,7 +163,6 @@ class _SendLocationState extends State<SendLocation> {
                     onPressed: () => setState(() {_doneOnce = false; _locationText = "Looking up location..."; }),
                   ),
                   TextFormField(
-                    autofocus: true,
                     decoration: const InputDecoration(
                       icon: const Icon(Icons.person),
                       hintText: 'Enter your first and last name',

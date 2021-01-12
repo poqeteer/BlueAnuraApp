@@ -10,7 +10,7 @@ class Home extends StatefulWidget {
 }
 
 class _HomeState extends State<Home> {
-  bool _startSurvey = false;
+  bool _surveyStarted = false;
 
   @override
   void initState() {
@@ -32,12 +32,13 @@ class _HomeState extends State<Home> {
 
     SharedPreferences prefs = await SharedPreferences.getInstance();
     setState(() {
-      _startSurvey = prefs.getBool(Constants.PREF_ACTIVE_SURVEY) ?? false;
+      _surveyStarted = prefs.getBool(Constants.PREF_ACTIVE_SURVEY) ?? false;
     });
   }
 
   @override
   Widget build(BuildContext context) {
+    double c_width = MediaQuery.of(context).size.width*0.8;
     FocusScope.of(context).unfocus();
     return Scaffold(
       // appBar: AppBar(title: Text(title)),
@@ -50,55 +51,82 @@ class _HomeState extends State<Home> {
                 child: Column(
                   children: [
                     Center(
-                        child: Text('Welcome to Blue Anura\'s', style: Theme.of(context).textTheme.headline6)
+                        child: Text('Welcome to Blue Anura\'s', 
+                            style: Theme.of(context).textTheme.headline6)
                     ),
                     Center(
-                        child: Text('Survey Camera Application', style: Theme.of(context).textTheme.headline5)
+                        child: Text('Survey Camera Application', 
+                            style: Theme.of(context).textTheme.headline5)
                     ),
                     Center(
-                        child: Text('Version ${AppInfo().version}.${AppInfo().buildNum}', style: Theme.of(context).textTheme.subtitle1)
+                        child: Text('Version ${AppInfo().version}.${AppInfo().buildNum}', 
+                            style: Theme.of(context).textTheme.subtitle1)
                     ),
                   ],
                 ),
             ),
-            Flexible(
-              fit: FlexFit.tight,
-              child: Column(
+            Container (
+                padding: EdgeInsets.only(left: 16.0, right: 16.0),
+                width: c_width,
+                child: Column(
                 children: [
-                  //ToDo:: This really should just be natural wrap... Same below
-                  Text('This app can replace or accompany the photo', style: Theme.of(context).textTheme.bodyText1),
-                  Text('log you\'re maintaining on paper. By automating', style: Theme.of(context).textTheme.bodyText1),
-                  Text('the log, it saves you time and creates a simpler', style: Theme.of(context).textTheme.bodyText1),
-                  Text('method for sending your photo surveys.', style: Theme.of(context).textTheme.bodyText1),
-                  Text(''),
-                  Divider(
-                      height: 10.0,
-                      color: Theme.of(context).primaryColor),
-                  Text(''),
-                  Text('Your ad goes here!', style: TextStyle(fontFamily: "Grandstander", fontSize: 30, color: Colors.red, fontWeight: FontWeight.w900)),
+                  Text('This app can replace or accompany the photo log you\'re'
+                       ' maintaining on paper. By automating the log, it saves '
+                       'you time and creates a simpler method for sending your '
+                       'photo surveys.',
+                      style: Theme.of(context).textTheme.bodyText1),
                 ],
               )
             ),
             Flexible(
+                fit: FlexFit.loose,
+                child: Container (
+                    padding: EdgeInsets.all(16.0),
+                    width: c_width,
+                    child: Column(
+                      children: [
+                        Divider(
+                            height: 10.0,
+                            color: Theme.of(context).primaryColor),
+                        Text(''),
+                        Text('Your ad or branding or message goes here!',
+                            style: TextStyle(
+                                fontFamily: "Grandstander",
+                                fontSize: 30,
+                                color: Colors.red,
+                                fontWeight: FontWeight.w900)),
+                      ],
+                    ))
+            ),
+            Flexible(
                 fit: FlexFit.tight,
-                child: Column(
+                child: Container (
+                    padding: EdgeInsets.all(16.0),
+                    width: c_width,
+                    child: Column(
                   children: [
                     Divider(
                         height: 10.0,
                         color: Theme.of(context).primaryColor),
                     Text(''),
-                    _startSurvey
+                    _surveyStarted
                         ? Column(children: [
-                              Text('You\'ve already started a survey.\nTo continue go to the Survey tab', style: Theme.of(context).textTheme.headline6),
+                              Text('You\'ve already started a survey. To '
+                                   'continue go to the Survey tab',
+                                  style: Theme.of(context).textTheme.headline6),
                               Text(''),
-                              Text('When done with your survey, tap the menu icon', style: Theme.of(context).textTheme.bodyText1),
-                              Text('located in the upper right in the Survey tab.', style: Theme.of(context).textTheme.bodyText1),
+                              Text('When done with your survey, tap the menu '
+                                   'icon located in the upper right in the '
+                                   'Survey tab.',
+                                  style: Theme.of(context).textTheme.bodyText1),
                             ]
                           )
-                        : Text('You haven\'t started a survey.\nTap the Survey tab to begin', style: Theme.of(context).textTheme.headline6),
+                        : Text('You haven\'t started a survey. Tap the Survey '
+                               'tab to begin',
+                              style: Theme.of(context).textTheme.headline6),
                   ],
                 )
-            ),
+            )),
           ],
         ),
       ),

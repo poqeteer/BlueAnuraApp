@@ -42,12 +42,12 @@
 	<key>UIViewControllerBasedStatusBarAppearance</key>
 	<false/>
 	<key>NSCameraUsageDescription</key>
-    <string>camera</string>
-    <key>NSMicrophoneUsageDescription</key>
-    <string>microphone</string>
+    <string>App needs your agreement, use your camera</string>
     <key>NSLocationWhenInUseUsageDescription</key>
-    <string>location</string>
+    <string>App needs your agreement, get your location</string>
     <key>NSLocationAlwaysUsageDescription</key>
-    <string>location</string>
+    <string>App needs your agreement, get your location</string>
+     <key>NSPhotoLibraryUsageDescription</key>
+     <string>App needs your agreement, can visit your album</string>
 </dict>
 </plist>
