@@ -56,7 +56,7 @@ class _SurveyState extends State<Survey> {
   }
 
   Future<void> initAsync() async {
-    if (await _promptPermissionSetting()) {
+    if (await _promptPermissionSetting() && mounted) {
       // Create the album if it exists or not...
       await RAlbum.createAlbum(Constants.ALBUM_NAME).then((value) => print(value));
 

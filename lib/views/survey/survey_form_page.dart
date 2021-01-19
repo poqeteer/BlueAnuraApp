@@ -41,11 +41,8 @@ class _SurveyFormPageState extends State<SurveyFormPage> {
   List<String> _categories = <String>[
     'Panorama',
     'Specimen',
-    'Paper',
-    'San Francisco',
-    'Honolulu',
-    'Tokyo',
-    'London',
+    'Other',
+    'Datasheet',
   ];
   String _category = 'Panorama';
 
