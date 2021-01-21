@@ -29,6 +29,7 @@ class Constants {
   static const String PREF_LAST_CATEGORY = 'lastCategory';
   static const String PREF_LAST_SUBCATEGORY = 'lastSubcategory';
   static const String PREF_LAST_SPECIMEN = 'lastSpecimen';
+  static const String PREF_TIME_CHECK = 'timeCheck';
 
   static const String CANCEL = 'Cancel';
   static const String SAVED = 'Saved';

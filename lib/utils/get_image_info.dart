@@ -6,23 +6,25 @@ import 'package:exif/exif.dart';
 
 class GetImageInfo {
   static Future<EXIFDataModel> readEXIF(File file) async {
-    EXIFDataModel info = new EXIFDataModel();
+    EXIFDataModel info ;
     try {
-      info.file = file;
-      Uint8List bytes = await info.file.readAsBytes();
+      Uint8List bytes = await file.readAsBytes();
       Map<String, IfdTag> tags = await readExifFromBytes(bytes);
 
-      info.surveyInfo = tags["Image ${Constants.EXIF_SURVEY}"].toString();
+      String surveyInfo = tags["Image ${Constants.EXIF_SURVEY}"].toString();
 
-      // "EXIF UserComment" == abc_123_20210107_004.jpg|Cat|SubCat|Spec|Comment
-      List<String> exifInfo = info.surveyInfo.split("|");
+      // "EXIF Image Description" == abc_123_20210107_004.jpg|Cat|SubCat|Spec|Comment
+      List<String> exifInfo = surveyInfo.split("|");
       if (exifInfo.isNotEmpty) {
-        info.filename = exifInfo[0];
-        info.category = exifInfo[1];
-        info.subcategory = exifInfo[2];
-        info.specimen = exifInfo[3];
-        info.comment = exifInfo[4];
-        info.sequence = info.filename.split("_")[3].substring(0, 3);
+        info = new EXIFDataModel(
+            surveyInfo: surveyInfo,
+            filename: exifInfo[0],
+            category: exifInfo[1],
+            subcategory: exifInfo[2],
+            specimen: exifInfo[3],
+            comment: exifInfo[4],
+            sequence: exifInfo[0].split("_")[3].substring(0, 3)
+        );
       } else info = null;
     } catch(e) {
       print('----------\nerror reading EXIF: $e\n----------');

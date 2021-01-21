@@ -1,6 +1,11 @@
+import 'package:adaptive_dialog/adaptive_dialog.dart';
 import 'package:blue_anura/constants.dart';
 import 'package:blue_anura/utils/app_info.dart';
+import 'package:devicelocale/devicelocale.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'package:intl/intl.dart';
+import 'package:ntp/ntp.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -34,6 +39,57 @@ class _HomeState extends State<Home> {
     setState(() {
       _surveyStarted = prefs.getBool(Constants.PREF_ACTIVE_SURVEY) ?? false;
     });
+
+
+    String currentLocale;
+
+    // Platform messages may fail, so we use a try/catch PlatformException.
+    try {
+      currentLocale = await Devicelocale.currentLocale;
+      print(currentLocale);
+    } on PlatformException {
+      print("Error obtaining current locale");
+    }
+
+    try {
+      DateTime ntpDate = await NTP.now();
+      DateTime date = DateTime.now();
+      if (ntpDate.hour != date.hour || ntpDate.minute != date.minute ||
+          ntpDate.day != date.day || ntpDate.month != date.month ||
+          ntpDate.year != date.year) {
+        String displayTime = '';
+        String displayDate = ntpDate.toString();
+        if (currentLocale.isNotEmpty) {
+          displayDate = DateFormat.yMd(currentLocale).format(DateTime.now());
+          DateTime working = DateTime(ntpDate.year, ntpDate.month, ntpDate.day, ntpDate.hour, ntpDate.minute);
+          DateFormat format = DateFormat.jm(currentLocale);
+          displayTime = format.format(working);
+        }
+        await showOkAlertDialog(
+          context: context,
+          title: 'System Time',
+          message: 'It appears either you system date and time isn\'t '
+              'correctly set. Please verify your date and time are '
+              'correct.\n\n'
+              'According to Network Time Protocol (NTP) your date and time should be:\n\n'
+              '  $displayDate $displayTime',
+          okLabel: 'Ok',
+        );
+      }
+    } catch (e) {
+      bool timeChecked = prefs.getBool(Constants.PREF_TIME_CHECK) ?? false;
+      if (!timeChecked) {
+        prefs.setBool(Constants.PREF_TIME_CHECK, true);
+        await showOkAlertDialog(
+            context: context,
+            title: 'System Time',
+            message: 'Application was unable to verify your date and time '
+                'with the Network Time Protocol (NTP). Please verify that '
+                'your date and time are correct.',
+            okLabel: 'Ok'
+        );
+      }
+    }
   }
 
   @override

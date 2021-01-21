@@ -1,8 +1,10 @@
 import 'dart:io';
 import 'dart:typed_data';
+import 'package:adaptive_dialog/adaptive_dialog.dart';
 import 'package:blue_anura/constants.dart';
 import 'package:blue_anura/models/exif_data_model.dart';
 import 'package:blue_anura/utils/get_image_info.dart';
+import 'package:blue_anura/views/survey/survey_form_page.dart';
 import 'package:blue_anura/views/survey/viewer_page.dart';
 import 'package:blue_anura/views/widgets/labeled_text.dart';
 import 'package:flutter/material.dart';
@@ -24,7 +26,7 @@ class AlbumThumbnail extends StatefulWidget {
 }
 
 class _AlbumThumbnailState extends State<AlbumThumbnail> {
-  EXIFDataModel exifDataModel;
+  EXIFDataModel _exifDataModel;
   String _title = "";
   String _category = "";
   String _subcategory = "";
@@ -39,13 +41,13 @@ class _AlbumThumbnailState extends State<AlbumThumbnail> {
   Future<void> _initState() async {
     if (!mounted) return;
     File file = await widget.medium.getFile();
-    exifDataModel = await GetImageInfo.readEXIF(file);
+    _exifDataModel = await GetImageInfo.readEXIF(file);
 
     String info;
-    if (exifDataModel != null) {
+    if (_exifDataModel != null) {
       // Extract the filename then get the last value and remove the extension to
       // get the sequence #
-      info = "#${exifDataModel.sequence} @ ";
+      info = "#${_exifDataModel.sequence} @ ";
 
       DateTime date = widget.medium.creationDate ?? widget.medium.modifiedDate;
       if (date != null) {
@@ -62,9 +64,9 @@ class _AlbumThumbnailState extends State<AlbumThumbnail> {
 
     setState(() {
       _title = info;
-      _category = exifDataModel?.category ?? "";
-      _subcategory = exifDataModel?.subcategory ?? "";
-      _specimen = exifDataModel?.specimen ?? "";
+      _category = _exifDataModel?.category ?? "";
+      _subcategory = _exifDataModel?.subcategory ?? "";
+      _specimen = _exifDataModel?.specimen ?? "";
     });
   }
 
@@ -77,10 +79,23 @@ class _AlbumThumbnailState extends State<AlbumThumbnail> {
   Widget build(BuildContext context) {
     return GestureDetector(
       onTap: () async {
-        String result = await Navigator.of(context).push(MaterialPageRoute(
-            builder: (context) => ViewerPage(widget.medium, exifDataModel)));
-        if (result != Constants.CANCEL) {
-          await _initState();
+        if (_exifDataModel != null) {
+          File file = await widget.medium.getFile();
+          String result = await Navigator.of(context).push(MaterialPageRoute(
+              builder: (context) => SurveyFormPage(_title, file, _exifDataModel))
+          );
+          if (result != Constants.CANCEL) {
+            await _initState();
+          }
+        } else {
+          await showOkAlertDialog(
+              context: context,
+              title: 'Image Error',
+              message: 'There appears to be something wrong with this image\'s data. '
+                      'It cannot be reviewed.',
+              okLabel: 'Ok'
+          );
+
         }
       },
       child: Column(

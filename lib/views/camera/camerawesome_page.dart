@@ -5,6 +5,7 @@ import 'package:blue_anura/constants.dart';
 import 'package:blue_anura/views/camera/preview_page.dart';
 import 'package:blue_anura/views/camera/widgets/bottom_bar.dart';
 import 'package:blue_anura/views/camera/widgets/top_bar.dart';
+import 'package:blue_anura/views/survey/survey_form_page.dart';
 import 'package:blue_anura/views/widgets/base_nav_page.dart';
 import 'package:camerawesome/camerawesome_plugin.dart';
 import 'package:camerawesome/models/orientations.dart';
@@ -207,14 +208,29 @@ class _CameraState extends State<Camera> with TickerProviderStateMixin {
     // print("==> img.width : ${img.width} | img.height : ${img.height}");
     print("----------------------------------");
 
-    final String result = await Navigator.of(context).push(MaterialPageRoute(
-        builder: (context) => PreviewPage(filePath)));
+    // final String result = await Navigator.of(context).push(MaterialPageRoute(
+    //     builder: (context) => PreviewPage(filePath)));
 
-    if (result != null && result.contains(Constants.SAVED)) {
-      Navigator.pop(context, result);
-    } else {
-      File(filePath).deleteSync();
-    }
+    final File _image = File(filePath);
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    int sequence = prefs.getInt(Constants.PREF_SEQUENCE);
+    FileStat fs = await FileStat.stat(filePath);
+    DateTime date = fs.modified;
+    String _sequence = sequence.toString().padLeft(3, '0') ?? '001';
+    String _title = '#$_sequence @ ${date?.toLocal().toString()?.split(" ")[1].substring(0, 5)}';
+
+    await Navigator.of(context).push(MaterialPageRoute(
+          builder: (context) => SurveyFormPage(_title, _image, null)));
+
+    // if (result != null && result.contains(Constants.SAVED)) {
+    //   Navigator.pop(context, result);
+    // } else {
+      try {
+        File(filePath).deleteSync(); // <-- Looks like RAlbum.saveAlbum actually moves the file, since doesn't really hurt so no foul
+      } catch(e) {
+        print("Temp file delete error: $e");
+      }
+    // }
   }
 
   _buildChangeResolutionDialog() {

@@ -12,6 +12,7 @@ import 'package:devicelocale/devicelocale.dart';
 import 'package:form_validator/form_validator.dart';
 import 'package:share/share.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:ntp/ntp.dart';
 
 class SendLocation extends StatefulWidget {
   SendLocation({Key key}) : super(key: key);
@@ -30,6 +31,12 @@ class _SendLocationState extends State<SendLocation> {
   TextEditingController _dateTextController = new TextEditingController();
   TextEditingController _timeTextController = new TextEditingController();
 
+  bool _showDateTime = false;
+
+  // Use these because the built in validators aren't very good...
+  RegExp _emailRegExp = RegExp(r"^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$");
+  RegExp _phoneRegExp = RegExp(r"^(\+\d{1,2}\s)?\(?\d{3}\)?[\s.-]\d{3}[\s.-]\d{4}$");
+
   final Location location = Location();
   LocationData _locationData;
 
@@ -37,6 +44,8 @@ class _SendLocationState extends State<SendLocation> {
   String _locationText = 'Looking up location...';
 
   String _locale;
+  int _gpsTime;
+  String _ntp;
 
   TextInputType phoneKeyboardType = TextInputType.phone;
   final focusPhone = FocusNode();
@@ -84,6 +93,8 @@ class _SendLocationState extends State<SendLocation> {
     }
     SharedPreferences prefs = await SharedPreferences.getInstance();
 
+    _ntp = (await NTP.now()).toString();
+
     // If the widget was removed from the tree while the asynchronous platform
     // message was in flight, we want to discard the reply rather than calling
     // setState to update our non-existent appearance.
@@ -130,6 +141,7 @@ class _SendLocationState extends State<SendLocation> {
           setState(() {
             _locationText = "Location: ${_location.latitude} / ${_location.longitude}";
             _locationData = _location;
+            _gpsTime = _location.time.toInt();
           },);
       } else {
         if (mounted)
@@ -166,19 +178,19 @@ class _SendLocationState extends State<SendLocation> {
                     decoration: const InputDecoration(
                       icon: const Icon(Icons.person),
                       hintText: 'Enter your first and last name',
-                      labelText: 'From',
+                      labelText: 'My Name',
                     ),
                     controller: _nameTextController,
                     textInputAction:  TextInputAction.next,
                     onFieldSubmitted: (_) => FocusScope.of(context).requestFocus(focusPhone),
-                    validator: ValidationBuilder().minLength(1, "Name is required").build(),
+                    validator: ValidationBuilder().minLength(2, "Entering your name is required").build(),
                   ),
                   TextFormField(
                     focusNode: focusPhone,
                     decoration: const InputDecoration(
                       icon: const Icon(Icons.phone),
                       hintText: '(000) 000-0000',
-                      labelText: 'Phone',
+                      labelText: 'My Phone Number',
                     ),
                     keyboardType: phoneKeyboardType,
                     inputFormatters: [
@@ -187,21 +199,22 @@ class _SendLocationState extends State<SendLocation> {
                     controller: _phoneTextController,
                     textInputAction:  TextInputAction.next,
                     onFieldSubmitted: (_) => FocusScope.of(context).requestFocus(focusEmail),
-                    validator: ValidationBuilder().regExp(RegExp(r"^(\+\d{1,2}\s)?\(?\d{3}\)?[\s.-]\d{3}[\s.-]\d{4}$"), "Phone number required").build(),
+                    validator: ValidationBuilder().regExp(_phoneRegExp, "Your phone number is required").build(),
                   ),
                   TextFormField(
                     focusNode: focusEmail,
                     decoration: const InputDecoration(
                       icon: const Icon(Icons.email),
                       hintText: 'Enter your email address',
-                      labelText: 'Email',
+                      labelText: 'My Email Address',
                     ),
                     controller: _emailTextController,
                     textInputAction:  TextInputAction.next,
                     keyboardType: TextInputType.emailAddress,
-                    validator: ValidationBuilder().email("Valid email required").build(),
+                    validator: ValidationBuilder().regExp(_emailRegExp, "Your valid email is required").build(),
                   ),
-                  Row(
+                  _showDateTime
+                      ? Row (
                     children: <Widget> [
                       Expanded(
                         child: Row(
@@ -262,7 +275,9 @@ class _SendLocationState extends State<SendLocation> {
                         ),
                       ),
                     ],
-                  ),
+                  )
+                      : SizedBox()
+                  ,
                   Padding(
                       padding: const EdgeInsets.symmetric(vertical: 20.0),
                       child: Row(

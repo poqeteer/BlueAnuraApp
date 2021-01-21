@@ -1,5 +1,5 @@
 class CategoryModel {
-  const CategoryModel({this.code, this.name, this.specimenRequired});
+  const CategoryModel({this.code, this.name, this.specimenRequired = false});
 
   final String code;
   final String name;

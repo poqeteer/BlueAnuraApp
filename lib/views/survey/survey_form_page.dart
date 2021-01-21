@@ -2,15 +2,18 @@ import 'dart:io';
 
 import 'package:adaptive_dialog/adaptive_dialog.dart';
 import 'package:blue_anura/constants.dart';
+import 'package:blue_anura/models/category_model.dart';
 import 'package:blue_anura/models/exif_data_model.dart';
 import 'package:blue_anura/utils/app_info.dart';
 import 'package:blue_anura/utils/get_location.dart';
-import 'package:blue_anura/views/widgets/base_nav_page.dart';
+import 'package:blue_anura/views/survey/widgets/review_image_page.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_exif_plugin/flutter_exif_plugin.dart';
+import 'package:form_validator/form_validator.dart';
 import 'package:intl/intl.dart';
 import 'package:location/location.dart';
+import 'package:path_provider/path_provider.dart';
 import 'package:r_album/r_album.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -38,13 +41,15 @@ class _SurveyFormPageState extends State<SurveyFormPage> {
 
   bool _showFloatingButton = false;
 
-  List<String> _categories = <String>[
-    'Panorama',
-    'Specimen',
-    'Other',
-    'Datasheet',
+  List<CategoryModel> _categories = <CategoryModel>[
+  CategoryModel(code: 'Panorama', name: 'Panorama'),
+  CategoryModel(code: 'Specimen', name: 'Specimen', specimenRequired: true),
+  CategoryModel(code: 'Other', name: 'Other'),
+  CategoryModel(code: 'Datasheet', name: 'Datasheet'),
   ];
-  String _category = 'Panorama';
+  CategoryModel _category;
+  bool _specimenRequired = false;
+  DateTime _fileDateTime;
 
   @override
   void initState() {
@@ -57,20 +62,32 @@ class _SurveyFormPageState extends State<SurveyFormPage> {
     if (!mounted) return;
     SharedPreferences prefs = await SharedPreferences.getInstance();
 
+    FileStat fs = await FileStat.stat(widget.file.path);
+
     setState(() {
+      _fileDateTime = fs.modified;
       if (widget.exifDataModel != null) {
-        _category = widget.exifDataModel?.category;
+        _categories.forEach((CategoryModel element) {
+          if (element.code == widget.exifDataModel?.category)
+            _category = element;
+        });
+        if (_category == null) _category = _categories[0];
         _subcategoryTextController.text =
             widget.exifDataModel?.subcategory ?? "";
         _specimenTextController.text = widget.exifDataModel?.specimen ?? "";
         _commentTextController.text = widget.exifDataModel?.comment ?? "";
       } else {
-        _category = prefs.getString(Constants.PREF_LAST_CATEGORY) ?? _categories[0];
+        String cat = prefs.getString(Constants.PREF_LAST_CATEGORY) ?? "Panorama";
+        _categories.forEach((CategoryModel element) {
+          if (element.code == cat)
+            _category =  element;
+        });
         _subcategoryTextController.text =
             prefs.getString(Constants.PREF_LAST_SUBCATEGORY) ?? "";
         _specimenTextController.text = prefs.getString(Constants.PREF_LAST_SPECIMEN) ?? "";
         _commentTextController.text = "";
       }
+      _specimenRequired = _category.specimenRequired;
     });
   }
 
@@ -96,8 +113,19 @@ class _SurveyFormPageState extends State<SurveyFormPage> {
   @override
   Widget build(BuildContext context) {
 
-    return BaseNavPage(title: widget.title, body: Scaffold(
-      body: Form(
+    return WillPopScope(onWillPop:() => null, child: Scaffold(
+        appBar: AppBar(
+          // leading: IconButton(
+          //   onPressed: () => Navigator.of(context).pop(),
+          //   icon: Icon(Icons.arrow_back_ios),
+          // ),
+          title: Row(children: [
+            Text(widget.title),
+          ]),
+          automaticallyImplyLeading: false,
+          backgroundColor: Constants.mainBackgroundColor,
+        ),
+        body: Form(
           key: _formKey,
           autovalidateMode: AutovalidateMode.always,
           child: ListView(
@@ -105,7 +133,21 @@ class _SurveyFormPageState extends State<SurveyFormPage> {
             children: <Widget>[
               Padding(
                 padding: const EdgeInsets.symmetric(vertical: 16.0),
-                child: FractionallySizedBox(
+                child: GestureDetector(
+                  onTap:() async {
+                    EXIFDataModel exifDataModel = new EXIFDataModel(
+                      category: _category.code,
+                      subcategory: _subcategoryTextController.text,
+                      specimen: _specimenTextController.text,
+                    );
+                    String result = await Navigator.of(context).push(MaterialPageRoute(
+                        builder: (context) => ReviewImagePage(widget.file, widget.title, exifDataModel))
+                    );
+                    if (result != Constants.CANCEL) {
+                      await _initState();
+                    }
+                  },
+                  child: FractionallySizedBox(
                     alignment: Alignment.center,
                     widthFactor: 0.5,
                     child: Container(
@@ -115,40 +157,41 @@ class _SurveyFormPageState extends State<SurveyFormPage> {
                         borderRadius: BorderRadius.circular(5.0),
                         image: DecorationImage(
                             image: FileImage(widget.file),
-                            fit: BoxFit.cover
+                            fit: BoxFit.cover,
                         ),
                       ),
-                    )),
-
+                    ),
+                )),
               ),
-              FormField<String>(
-                builder: (FormFieldState<String> state) {
+              FormField<CategoryModel>(
+                builder: (FormFieldState<CategoryModel> state) {
                   return InputDecorator(
                     decoration: InputDecoration(
                       icon: const Icon(Icons.category_outlined),
                       labelText: 'Category',
                       errorText: state.hasError ? state.errorText : null,
                     ),
-                    isEmpty: _category == '',
+                    isEmpty: _category == null,
                     child: new DropdownButtonHideUnderline(
-                      child: new DropdownButton<String>(
+                      child: new DropdownButton<CategoryModel>(
                         value: _category,
                         isDense: true,
-                        onChanged: (String newValue) {
+                        onChanged: (CategoryModel newValue) {
                           if (newValue != _category) {
                             setState(() {
                               _category = newValue;
                               _subcategoryTextController.text = "";
                               _specimenTextController.text = "";
+                              _specimenRequired = newValue.specimenRequired;
                             });
                             state.didChange(newValue);
                           }
                           FocusScope.of(context).requestFocus(_focusSub);
                         },
-                        items: _categories.map((String value) {
-                          return new DropdownMenuItem<String>(
+                        items: _categories.map((CategoryModel value) {
+                          return new DropdownMenuItem<CategoryModel>(
                             value: value,
-                            child: new Text(value),
+                            child: new Text(value.name),
                           );
                         }).toList(),
                       ),
@@ -176,12 +219,10 @@ class _SurveyFormPageState extends State<SurveyFormPage> {
                   icon: Icon(Icons.bug_report_outlined ),
                 ),
                 controller: _specimenTextController,
-                keyboardType: TextInputType.number,
-                inputFormatters: [
-                  FilteringTextInputFormatter.digitsOnly,
-                ],
                 textInputAction:  TextInputAction.next,
                 onFieldSubmitted: (_) => FocusScope.of(context).requestFocus(_focusCom),
+                validator: _specimenRequired ? ValidationBuilder().minLength(1, "Specimen number is required").build() : (String s) => null,
+                enabled: _specimenRequired,
               ),
               TextFormField(
                 focusNode: _focusCom,
@@ -199,7 +240,9 @@ class _SurveyFormPageState extends State<SurveyFormPage> {
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.end,
                     children: [
-                      OutlinedButton(
+                      widget.exifDataModel == null
+                      ? SizedBox()
+                      : OutlinedButton(
                           child: Text(Constants.CANCEL),
                           onPressed: () {
                             // your code
@@ -207,7 +250,7 @@ class _SurveyFormPageState extends State<SurveyFormPage> {
                           }),
                       SizedBox(width: 15),
                       ElevatedButton(
-                          child: Text("Save"),
+                          child: Text(widget.exifDataModel == null ? "Done" : "Save"),
                           onPressed: () async {
                             if (_formKey.currentState.validate()) {
                               SharedPreferences prefs = await SharedPreferences
@@ -217,24 +260,27 @@ class _SurveyFormPageState extends State<SurveyFormPage> {
                               String formattedSequence;
                               final int sequence = (prefs.getInt(
                                   Constants.PREF_SEQUENCE) ?? 1);
+                              Directory dir = await getExternalStorageDirectory();
+                              String localFile = dir.path.replaceAll("file", "cache/") + filePath.split('/').last;
 
-                              prefs.setString(Constants.PREF_LAST_CATEGORY, _category);
+                              prefs.setString(Constants.PREF_LAST_CATEGORY, _category.code);
                               prefs.setString(Constants.PREF_LAST_SUBCATEGORY, _subcategoryTextController.text);
                               prefs.setString(Constants.PREF_LAST_SPECIMEN, _specimenTextController.text);
 
                               // Stopwatch stopwatch = new Stopwatch()..start();
 
-                              final exif = FlutterExif.fromPath(filePath);
+                              FlutterExif exif = FlutterExif.fromPath(filePath);
                               // print('read exif: ${stopwatch.elapsed}');
 
                               final String surveyInfo =
-                                  "$_category|"
+                                  "${_category.code}|"
                                   "${_subcategoryTextController.text}|"
                                   "${_specimenTextController.text}|"
                                   "${_commentTextController.text}";
 
                               // New? Add location and app info
                               if (widget.exifDataModel == null) {
+                                exif = FlutterExif.fromPath(filePath);
                                 formattedSequence = sequence.toString()
                                     .padLeft(3, '0');
                                 LocationData _location;
@@ -267,6 +313,10 @@ class _SurveyFormPageState extends State<SurveyFormPage> {
                                     'ASCII\u{0}\u{0}\u{0}Blue Anura v${AppInfo()
                                         .version}.${AppInfo().buildNum}');
                               } else {
+                                File file = File(filePath);
+                                file.copy(localFile);
+                                exif = FlutterExif.fromPath(localFile);
+
                                 formattedFilename = widget.exifDataModel.filename;
                                 formattedSequence = widget.exifDataModel.sequence;
                               }
@@ -298,6 +348,10 @@ class _SurveyFormPageState extends State<SurveyFormPage> {
                                 prefs.setInt(Constants.PREF_SEQUENCE, sequence + 1);
 
                                 widget.file.delete();
+                              } else {
+                                File file = File(localFile);
+                                file.copy(filePath);
+                                file.delete();
                               }
 
                               Navigator.pop(context, '${Constants.SAVED} #$formattedSequence');

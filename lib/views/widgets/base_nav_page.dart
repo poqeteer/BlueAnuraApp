@@ -8,7 +8,8 @@ class BaseNavPage extends StatelessWidget {
   final String subtitle;
   final Widget body;
 
-  BaseNavPage({String title, String subtitle, Widget body}) : body = body, title = title, subtitle = subtitle;
+  BaseNavPage({String title, String subtitle, Widget body}) :
+        body = body, title = title, subtitle = subtitle;
 
   @override
   Widget build(BuildContext context) {

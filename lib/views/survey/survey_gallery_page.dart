@@ -163,7 +163,8 @@ class _SurveyState extends State<Survey> {
   void _launchCamera() {
     Navigator.of(context).push(MaterialPageRoute(
         builder: (context) => Camera())).then((result) async {
-      if (result != null && result.contains(Constants.SAVED)) {
+      // if (result != null && result.contains(Constants.SAVED)) {
+      {
         print('-----------\n_launchCamera result: $result\n-----------');
         // ScaffoldMessenger.of(context)
         //   ..removeCurrentSnackBar()
@@ -202,8 +203,8 @@ class _SurveyState extends State<Survey> {
         if (count == 5) {
           AlertDialog(title: Text('System error'), content: Text('Please exit application and reload!'));
         }
-      } else {
-        _checkSurveyStarted();
+      // } else {
+      //   _checkSurveyStarted();
       }
     });
   }
