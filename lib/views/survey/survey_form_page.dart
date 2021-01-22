@@ -7,15 +7,17 @@ import 'package:blue_anura/models/exif_data_model.dart';
 import 'package:blue_anura/utils/app_info.dart';
 import 'package:blue_anura/utils/get_location.dart';
 import 'package:blue_anura/views/survey/widgets/review_image_page.dart';
+import 'package:edit_exif/edit_exif.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:flutter_exif_plugin/flutter_exif_plugin.dart';
+// import 'package:flutter_exif_plugin/flutter_exif_plugin.dart';
 import 'package:form_validator/form_validator.dart';
 import 'package:intl/intl.dart';
 import 'package:location/location.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:r_album/r_album.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+
 
 class SurveyFormPage extends StatefulWidget {
   final String title;
@@ -49,7 +51,6 @@ class _SurveyFormPageState extends State<SurveyFormPage> {
   ];
   CategoryModel _category;
   bool _specimenRequired = false;
-  DateTime _fileDateTime;
 
   @override
   void initState() {
@@ -62,10 +63,7 @@ class _SurveyFormPageState extends State<SurveyFormPage> {
     if (!mounted) return;
     SharedPreferences prefs = await SharedPreferences.getInstance();
 
-    FileStat fs = await FileStat.stat(widget.file.path);
-
     setState(() {
-      _fileDateTime = fs.modified;
       if (widget.exifDataModel != null) {
         _categories.forEach((CategoryModel element) {
           if (element.code == widget.exifDataModel?.category)
@@ -113,7 +111,14 @@ class _SurveyFormPageState extends State<SurveyFormPage> {
   @override
   Widget build(BuildContext context) {
 
-    return WillPopScope(onWillPop:() => null, child: Scaffold(
+    return WillPopScope(
+      onWillPop:() {
+        if (widget.exifDataModel != null) {
+          Navigator.pop(context);
+        }
+        return null;
+      },
+      child: Scaffold(
         appBar: AppBar(
           // leading: IconButton(
           //   onPressed: () => Navigator.of(context).pop(),
@@ -122,7 +127,7 @@ class _SurveyFormPageState extends State<SurveyFormPage> {
           title: Row(children: [
             Text(widget.title),
           ]),
-          automaticallyImplyLeading: false,
+          automaticallyImplyLeading: widget.exifDataModel != null,
           backgroundColor: Constants.mainBackgroundColor,
         ),
         body: Form(
@@ -269,8 +274,7 @@ class _SurveyFormPageState extends State<SurveyFormPage> {
 
                               // Stopwatch stopwatch = new Stopwatch()..start();
 
-                              FlutterExif exif = FlutterExif.fromPath(filePath);
-                              // print('read exif: ${stopwatch.elapsed}');
+                              FlutterExif exif;
 
                               final String surveyInfo =
                                   "${_category.code}|"
@@ -280,19 +284,21 @@ class _SurveyFormPageState extends State<SurveyFormPage> {
 
                               // New? Add location and app info
                               if (widget.exifDataModel == null) {
-                                exif = FlutterExif.fromPath(filePath);
+                                // exif = FlutterExif.fromPath(filePath);
+                                exif = FlutterExif(filePath);
+                                // print('read exif: ${stopwatch.elapsed}');
                                 formattedSequence = sequence.toString()
                                     .padLeft(3, '0');
-                                LocationData _location;
+                                LocationData location;
                                 try {
-                                  _location = await BuildLocation.buildLocationText();
+                                  location = await BuildLocation.buildLocationText();
                                   // print('got location: ${stopwatch.elapsed}');
                                 } catch (e) {
                                   await showOkAlertDialog(title: "Location Error",
                                       message: e.toString(),
                                       context: context);
                                 }
-                                if (_location != null)
+                                if (location != null)
                                   formattedFilename =
                                   '${prefs.get(Constants.PREF_LAST_ORG)}'
                                       '_${prefs.get(Constants.PREF_LAST_LOC)}'
@@ -301,41 +307,77 @@ class _SurveyFormPageState extends State<SurveyFormPage> {
                                       '_$formattedSequence.jpg';
 
                                 // Add location information
-                                await exif.setLatLong(
-                                    _location.latitude, _location.longitude);
+                                // await exif.setLatLong(
+                                //     _location.latitude, _location.longitude);
+                                Map loc = Map();
+                                loc["lat"] = location.latitude;
+                                loc["lng"] = location.longitude;
+                                await exif.setGps(loc).then((result) {
+                                  if (result != null) {
+                                    print("----------------------------------");
+                                    print('Error exif GPS: $result');
+                                    print("----------------------------------");
+
+                                  }
+                                });
                                 // print("----------------------------------");
                                 // print('exif: ${stopwatch.elapsed}');
                                 // print("exif updated: $_location");
                                 // print("----------------------------------");
 
                                 // Add app info
-                                await exif.setAttribute(Constants.EXIF_BA_TAG,
-                                    'ASCII\u{0}\u{0}\u{0}Blue Anura v${AppInfo()
-                                        .version}.${AppInfo().buildNum}');
+                                // await exif.setAttribute(Constants.EXIF_BA_TAG,
+                                //     'ASCII\u{0}\u{0}\u{0}Blue Anura v${AppInfo()
+                                //         .version}.${AppInfo().buildNum}');
+                                Map baTag = Map();
+                                baTag[Constants.EXIF_BA_TAG] =
+                                  'ASCII\u{0}\u{0}\u{0}Blue Anura v${AppInfo().version}'
+                                    '.${AppInfo().buildNum}';
+                                await exif.setExif(baTag).then((result) {
+                                  if (result != null) {
+                                    print("----------------------------------");
+                                    print('Error exif${Constants.EXIF_BA_TAG}: $result');
+                                    print("----------------------------------");
+
+                                  }
+                                });
                               } else {
                                 File file = File(filePath);
-                                file.copy(localFile);
-                                exif = FlutterExif.fromPath(localFile);
+                                await file.copy(localFile);
+                                // exif = FlutterExif.fromPath(localFile);
+                                exif = FlutterExif(localFile);
+                                // print('read exif: ${stopwatch.elapsed}');
 
                                 formattedFilename = widget.exifDataModel.filename;
                                 formattedSequence = widget.exifDataModel.sequence;
                               }
                               // Add/Update the survey information
-                              await exif.setAttribute(Constants.EXIF_SURVEY,
-                                  '$formattedFilename|$surveyInfo\u{0}');
+                              // await exif.setAttribute(Constants.EXIF_SURVEY,
+                              //     '$formattedFilename|$surveyInfo\u{0}');
+                              Map survey = Map();
+                              survey[Constants.EXIF_SURVEY] =
+                                '$formattedFilename|$surveyInfo\u{0}';
+                              await exif.setExif(survey).then((result) {
+                                if (result != null) {
+                                  print("----------------------------------");
+                                  print('Error exif ${Constants.EXIF_SURVEY}: $result');
+                                  print("----------------------------------");
 
-                              // apply attributes
-                              try {
-                                await exif.saveAttributes();
-                                // print('save exif: ${stopwatch.elapsed}');
-                              } catch (e) {
-                                print("==================================");
-                                print(e.toString());
-                                await showOkAlertDialog(title: "EXIF Error",
-                                    message: e.toString(),
-                                    context: context);
-                                print("==================================");
-                              }
+                                }
+                              });
+
+                              // // apply attributes
+                              // try {
+                              //   await exif.saveAttributes();
+                              //   // print('save exif: ${stopwatch.elapsed}');
+                              // } catch (e) {
+                              //   print("==================================");
+                              //   print(e.toString());
+                              //   await showOkAlertDialog(title: "EXIF Error",
+                              //       message: e.toString(),
+                              //       context: context);
+                              //   print("==================================");
+                              // }
 
                               // If new then move file to album
                               if (widget.exifDataModel == null) {

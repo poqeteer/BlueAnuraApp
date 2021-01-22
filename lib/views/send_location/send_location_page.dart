@@ -1,7 +1,9 @@
 // import 'dart:math';
 import 'dart:io';
 
+import 'package:adaptive_dialog/adaptive_dialog.dart';
 import 'package:blue_anura/utils/app_info.dart';
+import 'package:blue_anura/utils/get_location.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:intl/intl.dart';
@@ -12,7 +14,6 @@ import 'package:devicelocale/devicelocale.dart';
 import 'package:form_validator/form_validator.dart';
 import 'package:share/share.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:ntp/ntp.dart';
 
 class SendLocation extends StatefulWidget {
   SendLocation({Key key}) : super(key: key);
@@ -44,8 +45,6 @@ class _SendLocationState extends State<SendLocation> {
   String _locationText = 'Looking up location...';
 
   String _locale;
-  int _gpsTime;
-  String _ntp;
 
   TextInputType phoneKeyboardType = TextInputType.phone;
   final focusPhone = FocusNode();
@@ -93,8 +92,6 @@ class _SendLocationState extends State<SendLocation> {
     }
     SharedPreferences prefs = await SharedPreferences.getInstance();
 
-    _ntp = (await NTP.now()).toString();
-
     // If the widget was removed from the tree while the asynchronous platform
     // message was in flight, we want to discard the reply rather than calling
     // setState to update our non-existent appearance.
@@ -118,30 +115,23 @@ class _SendLocationState extends State<SendLocation> {
     void buildLocationText() async {
       if (_doneOnce || !mounted) return;
       _doneOnce = true;
-      String err = "";
-      bool _serviceEnabled = await location.serviceEnabled();
-      if (!_serviceEnabled) {
-        _serviceEnabled = await location.requestService();
-        if (!_serviceEnabled) {
-          err = "GPS Serve disabled";
-        }
+
+      LocationData location;
+      String err;
+      try {
+        location = await BuildLocation.buildLocationText();
+      } catch (e) {
+        await showOkAlertDialog(title: "Location Error",
+            message: e.toString(),
+            context: context);
+        err = e.toString();
       }
 
-      PermissionStatus _permissionGranted = await location.hasPermission();
-      if (err == "" && _permissionGranted == PermissionStatus.denied) {
-        _permissionGranted = await location.requestPermission();
-        if (_permissionGranted != PermissionStatus.granted) {
-          err =  "GPS Permission denied";
-        }
-      }
-
-      if (err == "") {
-        LocationData _location = await location.getLocation();
+      if (err == null) {
         if (mounted)
           setState(() {
-            _locationText = "Location: ${_location.latitude} / ${_location.longitude}";
-            _locationData = _location;
-            _gpsTime = _location.time.toInt();
+            _locationText = "Location: ${location.latitude} / ${location.longitude}";
+            _locationData = location;
           },);
       } else {
         if (mounted)

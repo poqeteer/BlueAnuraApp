@@ -2,7 +2,6 @@ import 'dart:async';
 import 'dart:io';
 
 import 'package:blue_anura/constants.dart';
-import 'package:blue_anura/views/camera/preview_page.dart';
 import 'package:blue_anura/views/camera/widgets/bottom_bar.dart';
 import 'package:blue_anura/views/camera/widgets/top_bar.dart';
 import 'package:blue_anura/views/survey/survey_form_page.dart';

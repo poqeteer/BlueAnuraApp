@@ -148,6 +148,13 @@ packages:
       url: "https://pub.dartlang.org"
     source: hosted
     version: "0.3.3"
+  edit_exif:
+    dependency: "direct main"
+    description:
+      name: edit_exif
+      url: "https://pub.dartlang.org"
+    source: hosted
+    version: "0.0.4"
   exif:
     dependency: "direct main"
     description:
@@ -193,13 +200,6 @@ packages:
     description: flutter
     source: sdk
     version: "0.0.0"
-  flutter_exif_plugin:
-    dependency: "direct main"
-    description:
-      path: "lib/views/camera/widgets/flutter_exif"
-      relative: true
-    source: path
-    version: "0.0.4"
   flutter_login:
     dependency: "direct main"
     description:
@@ -214,6 +214,13 @@ packages:
       url: "https://pub.dartlang.org"
     source: hosted
     version: "0.8.0"
+  flutter_native_timezone:
+    dependency: "direct main"
+    description:
+      name: flutter_native_timezone
+      url: "https://pub.dartlang.org"
+    source: hosted
+    version: "1.0.4"
   flutter_test:
     dependency: "direct dev"
     description: flutter

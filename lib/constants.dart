@@ -34,6 +34,7 @@ class Constants {
   static const String CANCEL = 'Cancel';
   static const String SAVED = 'Saved';
 
-  static const String EXIF_SURVEY = 'ImageDescription';
-  static const String EXIF_BA_TAG = 'UserComment';
+  static const String EXIF_SURVEY_ACTUAL_TAG = "Image ImageDescription";
+  static const String EXIF_SURVEY = 'TAG_IMAGE_DESCRIPTION';
+  static const String EXIF_BA_TAG = 'TAG_USER_COMMENT';
 }

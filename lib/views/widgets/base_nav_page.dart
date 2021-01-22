@@ -18,7 +18,7 @@ class BaseNavPage extends StatelessWidget {
         appBar: AppBar(
           leading: IconButton(
             onPressed: () => Navigator.of(context).pop(),
-            icon: Icon(Icons.arrow_back_ios),
+            icon: Icon(Icons.arrow_back),
           ),
           title: Row(children: [
             Text(title),

@@ -307,8 +307,8 @@ class _SurveyState extends State<Survey> {
               OkCancelResult result = await showOkCancelAlertDialog(
                 context: context,
                 title: 'Finished with Survey',
-                message: 'You are about to upload your survey photo log. This '
-                    'will close this survey and you will not be able continue '
+                message: 'You are about to upload your survey photo log and files. '
+                    'This will close this survey and you will not be able continue '
                     'with any other actions in this survey.\n\nAre you sure?',
                 okLabel: 'Yes',
                 cancelLabel: 'No'
@@ -325,7 +325,7 @@ class _SurveyState extends State<Survey> {
                 list.forEach((Medium element) {
                   ids.add(element.id);
                 });
-                PhotoManager.editor.deleteWithIds(ids);
+                await PhotoManager.editor.deleteWithIds(ids);
                 // The deleted id will be returned, if it fails, an empty array will be returned.
                 //final List<String> result = await PhotoManager.editor.deleteWithIds(ids);
                 // print('----------\nFiles removed\n-----------');
@@ -355,168 +355,5 @@ class _SurveyState extends State<Survey> {
           }
         },
     );
-    // DropdownButton(
-    //   icon: Icon(Icons.menu),
-    //   iconSize: 24,
-    //   iconEnabledColor: Colors.white,
-    //   iconDisabledColor: Colors.transparent,
-    //   elevation: 16,
-    //   style: TextStyle(color: Colors.black),
-    //   underline: Container(
-    //     height: 2,
-    //     color: Colors.transparent,
-    //   ),
-    //   onChanged: _hasMedia && _activeSurvey // This should never happen... But "disables" the menu
-    //       ? (String newValue) async {
-    //         print('----------\nResetting prefs\n-----------');
-    //         SharedPreferences prefs = await SharedPreferences.getInstance();
-    //         prefs.setInt(Constants.PREF_SEQUENCE, 1);
-    //         prefs.setBool(Constants.PREF_ACTIVE_SURVEY, false);
-    //
-    //         print('----------\nRemoving images\n-----------');
-    //         MediaPage _media = await _album.listMedia();
-    //         List<Medium> list = List.from(_media.items);
-    //         List<String> ids = [];
-    //         list.forEach((Medium element) {
-    //           ids.add(element.id);
-    //         });
-    //         PhotoManager.editor.deleteWithIds(ids);
-    //         // The deleted id will be returned, if it fails, an empty array will be returned.
-    //         //final List<String> result = await PhotoManager.editor.deleteWithIds(ids);
-    //         // print('----------\nFiles removed\n-----------');
-    //         // if (result.isNotEmpty) {
-    //         //   final Directory dir =
-    //         //   await StorageUtils.buildFolderPath(
-    //         //       '${Constants.BASE_ALBUM}/${Constants
-    //         //           .ALBUM_NAME}');
-    //         //   print('----------\nRemoving album folder\n-----------');
-    //         //   dir.deleteSync(recursive: true);
-    //         // } else {
-    //         //   print('----------\nError the deleteWithIds didn\'t work\n---------');
-    //         // }
-    //         print('----------\nReloading...\n-----------');
-    //         setState(() {
-    //           _loading = true;
-    //         });
-    //         // Kludge... This really isn't necessary but the
-    //         // PhotoManager call above doesn't come back using an
-    //         // await on SDK 30 and it does execute...
-    //         // So just wait a tick
-    //         sleep(const Duration(milliseconds: 500));
-    //
-    //         await initAsync();
-    //       }
-    //       : null,
-    //   items: <String>['Edit Survey Info', '-', 'Done']
-    //       .map<DropdownMenuItem<String>>((String value) {
-    //     return DropdownMenuItem<String>(
-    //       value: value,
-    //       child: value == '-' ? Divider() : Text(value),
-    //     );
-    //   }).toList(),
-    // ),
   }
-
-  // AlertDialog _surveyInfoDialog(
-  //     {
-  //       @required BuildContext context,
-  //       @required String saveButtonText,
-  //       bool cancelButton = false,
-  //       bool launchCamera = false,
-  //     }) {
-  //
-  //   final focusLocation = FocusNode();
-  //
-  //   Future <void> _done() async {
-  //     if (_formKey.currentState.validate()) {
-  //       _prefs.setString(Constants.PREF_LAST_ORG, _org4Dialog.toJsonString());
-  //       _prefs.setString(Constants.PREF_LAST_LOC, _locTextController.text);
-  //       _prefs.setBool(Constants.PREF_ACTIVE_SURVEY, true);
-  //       setState(() {
-  //         _location = _locTextController.text;
-  //         _organization = _org4Dialog;
-  //       });
-  //       FocusScope.of(context).unfocus();
-  //
-  //       if (launchCamera) _launchCamera();
-  //       else Navigator.pop(context);
-  //     }
-  //   }
-  //   setState(() {
-  //     _org4Dialog = _organization;
-  //     _locTextController.text = _location;
-  //   });
-  //   return AlertDialog(
-  //     scrollable: true,
-  //     title: Text("Main Survey Information", style: TextStyle(fontSize: 18)),
-  //     content:  Form(
-  //       key: _formKey,
-  //       child: Column(
-  //         mainAxisSize: MainAxisSize.min,
-  //         children: <Widget>[
-  //           FormField<OrganizationModel>(
-  //             builder: (FormFieldState<OrganizationModel> state) {
-  //               return InputDecorator(
-  //                 decoration: InputDecoration(
-  //                   icon: const Icon(Icons.category_outlined),
-  //                   labelText: 'Organization',
-  //                   errorText: state.hasError ? state.errorText : null,
-  //                 ),
-  //                 isEmpty: _org4Dialog == null,
-  //                 child: new DropdownButtonHideUnderline(
-  //                   child: new DropdownButton<OrganizationModel>(
-  //                     value: _org4Dialog,
-  //                     isDense: true,
-  //                     onChanged: (OrganizationModel newValue) {
-  //                       setState(() {
-  //                         _org4Dialog = newValue;
-  //                       });
-  //                       state.didChange(newValue);
-  //                       FocusScope.of(context).requestFocus(focusLocation);
-  //                     },
-  //                     items: _organizationList.map((OrganizationModel value) {
-  //                       return new DropdownMenuItem<OrganizationModel>(
-  //                         value: value,
-  //                         child: new Text(value.name),
-  //                       );
-  //                     }).toList(),
-  //                   ),
-  //                 ),
-  //               );
-  //             },
-  //           ),
-  //           TextFormField(
-  //             focusNode: focusLocation,
-  //             decoration: const InputDecoration(
-  //               icon: const Icon(Icons.location_pin),
-  //               hintText: 'Enter Location Identifier',
-  //               labelText: 'Location',
-  //             ),
-  //             controller: _locTextController,
-  //             keyboardType: TextInputType.number,
-  //             textInputAction:  TextInputAction.done,
-  //             inputFormatters: [
-  //               FilteringTextInputFormatter.digitsOnly,
-  //             ],
-  //             onEditingComplete: _done,
-  //             validator: ValidationBuilder().minLength(1, "Location ID is required").build(),
-  //             maxLength: 3,
-  //           ),
-  //         ],
-  //       ),
-  //     ),
-  //     actions: [
-  //       cancelButton
-  //           ? OutlineButton(
-  //               child: Text("Cancel"),
-  //               onPressed: () => Navigator.pop(context))
-  //           : SizedBox(),
-  //       ElevatedButton(
-  //         child: Text(saveButtonText),
-  //         onPressed: _done,
-  //       ),
-  //     ],
-  //   );
-  // }
 }
-

@@ -11,7 +11,7 @@ class GetImageInfo {
       Uint8List bytes = await file.readAsBytes();
       Map<String, IfdTag> tags = await readExifFromBytes(bytes);
 
-      String surveyInfo = tags["Image ${Constants.EXIF_SURVEY}"].toString();
+      String surveyInfo = tags[Constants.EXIF_SURVEY_ACTUAL_TAG].toString();
 
       // "EXIF Image Description" == abc_123_20210107_004.jpg|Cat|SubCat|Spec|Comment
       List<String> exifInfo = surveyInfo.split("|");

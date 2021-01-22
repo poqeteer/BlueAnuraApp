@@ -1,5 +1,3 @@
-import 'dart:io';
-
 class EXIFDataModel {
   const EXIFDataModel({this.category, this.comment, this.filename, this.sequence, this.specimen, this.subcategory, this.surveyInfo});
 

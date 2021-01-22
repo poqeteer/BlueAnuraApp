@@ -5,7 +5,6 @@ import 'package:blue_anura/constants.dart';
 import 'package:blue_anura/models/exif_data_model.dart';
 import 'package:blue_anura/utils/get_image_info.dart';
 import 'package:blue_anura/views/survey/survey_form_page.dart';
-import 'package:blue_anura/views/survey/viewer_page.dart';
 import 'package:blue_anura/views/widgets/labeled_text.dart';
 import 'package:flutter/material.dart';
 import 'package:photo_gallery/photo_gallery.dart';

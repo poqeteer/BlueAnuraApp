@@ -2,7 +2,7 @@ import 'dart:io';
 import 'dart:math';
 
 import 'package:camerawesome/models/orientations.dart';
-import 'package:blue_anura/utils/orientation_utils.dart';
+import 'package:blue_anura/views/camera/widgets/orientation_utils.dart';
 import 'package:flutter/material.dart';
 
 class PreviewCardWidget extends StatelessWidget {

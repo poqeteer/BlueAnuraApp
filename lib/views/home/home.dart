@@ -3,6 +3,7 @@ import 'package:blue_anura/constants.dart';
 import 'package:blue_anura/utils/app_info.dart';
 import 'package:devicelocale/devicelocale.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_native_timezone/flutter_native_timezone.dart';
 import 'package:flutter/services.dart';
 import 'package:intl/intl.dart';
 import 'package:ntp/ntp.dart';
@@ -28,7 +29,7 @@ class _HomeState extends State<Home> {
       Permission.camera,
       Permission.storage,
       Permission.location,
-      Permission.photos,
+      Permission.photos
     ].request();
 
     statuses.forEach((key, value) {
@@ -51,28 +52,44 @@ class _HomeState extends State<Home> {
       print("Error obtaining current locale");
     }
 
+    String timezone;
+    try {
+      timezone = await FlutterNativeTimezone.getLocalTimezone();
+      timezone = "\n\nThe timezone is set to:\n\n  $timezone";
+    } on PlatformException {
+      print("Failed to get the timezone.");
+      timezone = '';
+    }
+
     try {
       DateTime ntpDate = await NTP.now();
       DateTime date = DateTime.now();
+      prefs.setBool(Constants.PREF_TIME_CHECK, true);
       if (ntpDate.hour != date.hour || ntpDate.minute != date.minute ||
           ntpDate.day != date.day || ntpDate.month != date.month ||
           ntpDate.year != date.year) {
-        String displayTime = '';
-        String displayDate = ntpDate.toString();
+        String sysDisplayTime = '';
+        String sysDisplayDate = date.toString();
+        String ntpDisplayTime = '';
+        String ntpDisplayDate = ntpDate.toString();
         if (currentLocale.isNotEmpty) {
-          displayDate = DateFormat.yMd(currentLocale).format(DateTime.now());
+          ntpDisplayDate = DateFormat.yMd(currentLocale).format(ntpDate);
           DateTime working = DateTime(ntpDate.year, ntpDate.month, ntpDate.day, ntpDate.hour, ntpDate.minute);
           DateFormat format = DateFormat.jm(currentLocale);
-          displayTime = format.format(working);
+          ntpDisplayTime = format.format(working);
+          sysDisplayDate = DateFormat.yMd(currentLocale).format(date);
+          sysDisplayTime = format.format(date);
         }
         await showOkAlertDialog(
           context: context,
-          title: 'System Time',
-          message: 'It appears either you system date and time isn\'t '
-              'correctly set. Please verify your date and time are '
-              'correct.\n\n'
-              'According to Network Time Protocol (NTP) your date and time should be:\n\n'
-              '  $displayDate $displayTime',
+          title: 'System Time Error',
+          message: 'It appears your system date and/or time aren\'t set '
+              'correctly. Please update your settings.\n\n'
+              'Your current date and time are:\n\n'
+              ' $sysDisplayDate $sysDisplayTime$timezone\n\n'
+              'According to the NTP (Network Time Protocol) for the '
+              'current timezone, your date and time should be:\n\n'
+              '  $ntpDisplayDate $ntpDisplayTime',
           okLabel: 'Ok',
         );
       }
@@ -82,8 +99,8 @@ class _HomeState extends State<Home> {
         prefs.setBool(Constants.PREF_TIME_CHECK, true);
         await showOkAlertDialog(
             context: context,
-            title: 'System Time',
-            message: 'Application was unable to verify your date and time '
+            title: 'System Time Warning',
+            message: 'The application isn\'t unable to verify your date and time '
                 'with the Network Time Protocol (NTP). Please verify that '
                 'your date and time are correct.',
             okLabel: 'Ok'
@@ -94,7 +111,7 @@ class _HomeState extends State<Home> {
 
   @override
   Widget build(BuildContext context) {
-    double c_width = MediaQuery.of(context).size.width*0.8;
+    double cWidth = MediaQuery.of(context).size.width*0.8;
     FocusScope.of(context).unfocus();
     return Scaffold(
       // appBar: AppBar(title: Text(title)),
@@ -123,7 +140,7 @@ class _HomeState extends State<Home> {
             ),
             Container (
                 padding: EdgeInsets.only(left: 16.0, right: 16.0),
-                width: c_width,
+                width: cWidth,
                 child: Column(
                 children: [
                   Text('This app can replace or accompany the photo log you\'re'
@@ -138,7 +155,7 @@ class _HomeState extends State<Home> {
                 fit: FlexFit.loose,
                 child: Container (
                     padding: EdgeInsets.all(16.0),
-                    width: c_width,
+                    width: cWidth,
                     child: Column(
                       children: [
                         Divider(
@@ -158,7 +175,7 @@ class _HomeState extends State<Home> {
                 fit: FlexFit.tight,
                 child: Container (
                     padding: EdgeInsets.all(16.0),
-                    width: c_width,
+                    width: cWidth,
                     child: Column(
                   children: [
                     Divider(
